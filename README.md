@@ -59,4 +59,4 @@ npm run try-wasm
 
 ## Contributing
 
-This is part of the HCS-7 toolkit. For more information about HCS-7, visit [hashgraph.online](https://hashgraph.online).
+This is part of the HCS-7 toolkit. For more information about HCS-7, visit [HashgraphOnline](https://hashgraphonline.com).
