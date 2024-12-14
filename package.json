@@ -1,0 +1,44 @@
+{
+  "name": "@hashgraphonline/wasm-bridge",
+  "version": "1.0.2",
+  "description": "WASM Bridge capable of executing HCS-7 operations. Includes an example WASM binary for testing.",
+  "author": "kantorcodes",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/wasm-bridge.umd.cjs",
+  "module": "./dist/wasm-bridge.js",
+  "types": "./dist/wasm-bridge.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/wasm-bridge.js",
+      "require": "./dist/wasm-bridge.umd.cjs",
+      "types": "./dist/wasm-bridge.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:rust && vite build",
+    "build:rust": "wasm-pack build --target nodejs",
+    "preview": "vite preview",
+    "try-wasm": "node --loader ts-node/esm index.ts",
+    "create-hcs-7-topic": "ts-node create-hcs-7-topic.ts"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.55.1",
+    "dotenv": "^16.4.7",
+    "long": "^5.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "rollup-plugin-polyfill-node": "^0.13.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
