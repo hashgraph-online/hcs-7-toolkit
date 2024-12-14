@@ -23,8 +23,8 @@
         "experimentalSpecifierResolution": "node"
     },
     "include": [
-        "*.ts"
-    ],
+        "src/ts/**/*.ts"
+, "src/examples/index.ts"    ],
     "exclude": [
         "node_modules",
         "dist"

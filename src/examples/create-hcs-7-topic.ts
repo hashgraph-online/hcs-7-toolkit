@@ -4,48 +4,13 @@ import {
   TopicMessageSubmitTransaction,
   PrivateKey,
   TopicId,
+  AccountId,
 } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
+import { BaseMessage } from '../ts/wasm-bridge';
+import { mintedConfig, balanceConfig, wasmConfig } from './constants';
+
 dotenv.config();
-
-interface BaseMessage {
-  p: string;
-  op: string;
-  m: string;
-  t?: string;
-}
-
-interface EVMConfig extends BaseMessage {
-  c: {
-    contractAddress: string;
-    abi: {
-      inputs: Array<{
-        name: string;
-        type: string;
-      }>;
-      outputs: Array<{
-        name: string;
-        type: string;
-      }>;
-      type: string;
-      stateMutability: string;
-      name: string;
-    };
-  };
-}
-
-interface WASMConfig extends BaseMessage {
-  c: {
-    wasmTopicId: string;
-    inputType: {
-      stateData: Record<string, string>;
-    };
-    outputType: {
-      type: string;
-      format: string;
-    };
-  };
-}
 
 interface HCS1Registration extends BaseMessage {
   t_id: string;
@@ -99,10 +64,9 @@ async function createHcs7Topic(): Promise<string> {
 
   // Create client for testnet
   const client = Client.forTestnet();
-  client.setOperator(
-    process.env.HEDERAS_OPERATOR_ID,
-    process.env.HEDERAS_OPERATOR_KEY
-  );
+  const operatorId = AccountId.fromString(process.env.HEDERAS_OPERATOR_ID!);
+  const operatorKey = PrivateKey.fromString(process.env.HEDERAS_OPERATOR_KEY!);
+  client.setOperator(operatorId, operatorKey);
 
   const submitKey = PrivateKey.generateED25519();
   const submitPublicKey = submitKey.publicKey;
@@ -122,50 +86,8 @@ async function createHcs7Topic(): Promise<string> {
   console.log(`Created topic: ${topicId.toString()}`);
   console.log(`Submit Key: ${submitKey.toStringRaw()}`);
 
-  // Submit EVM configuration for Uniswap V3 pool price
-  const evmConfig: EVMConfig = {
-    p: 'hcs-7',
-    op: 'register-config',
-    t: 'evm',
-    c: {
-      contractAddress: '0x1d67aaf7f7e8d806bbeba24c4dea24808e1158b8',
-      abi: {
-        inputs: [],
-        name: 'minted',
-        outputs: [
-          {
-            name: '',
-            type: 'uint64',
-          },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-      },
-    },
-    m: 'LaunchPage Test Mint',
-  };
-
-  await submitTopicMessage(client, topicId, evmConfig, submitKey);
-
-  // Submit WASM configuration
-  const wasmConfig: WASMConfig = {
-    p: 'hcs-7',
-    op: 'register-config',
-    t: 'wasm',
-    c: {
-      wasmTopicId: '0.0.5263817',
-      inputType: {
-        stateData: {
-          minted: 'number',
-        },
-      },
-      outputType: {
-        type: 'string',
-        format: 'topic-id',
-      },
-    },
-    m: 'minted-even-odd-router',
-  };
+  await submitTopicMessage(client, topicId, mintedConfig, submitKey);
+  await submitTopicMessage(client, topicId, balanceConfig, submitKey);
 
   await submitTopicMessage(client, topicId, wasmConfig, submitKey);
 
@@ -191,7 +113,7 @@ async function createHcs7Topic(): Promise<string> {
 }
 
 // Run the script if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   createHcs7Topic()
     .then((topicId) => {
       console.log(`Successfully created HCS-7 topic: ${topicId}`);
@@ -201,3 +123,5 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
+export { createHcs7Topic };

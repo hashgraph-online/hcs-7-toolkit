@@ -1,4 +1,5 @@
-import { TextEncoder, TextDecoder } from 'util';
+// TextEncoder and TextDecoder are available globally in modern browsers
+// and in Node.js without explicit import
 
 export interface BaseMessage {
   p: string;
@@ -219,5 +220,29 @@ export class WasmBridge {
     const wasmInstance = await WebAssembly.instantiate(wasmModule, imports);
     this.wasm = wasmInstance.exports as WasmExports;
     return this.wasm;
+  }
+
+  createStateData(wasmConfig: WASMConfig, stateData: Record<string, string> = {}) {
+    let dynamicStateData: Record<string, string> = {};
+    if (wasmConfig?.c?.inputType?.stateData) {
+      // Map each configured state field to its value
+      Object.keys(wasmConfig.c.inputType.stateData).forEach((key) => {
+        if (stateData && key in stateData && stateData[key] !== undefined) {
+          dynamicStateData[key] = String(stateData[key]).replace('-', '');
+        } else {
+          // Use the default value from config if available
+          dynamicStateData[key] = String(
+            wasmConfig.c.inputType.stateData[key] || '0'
+          ).replace('-', '');
+        }
+      });
+    }
+    return dynamicStateData;
+  }
+
+  executeWasm(stateData: Record<string, any>, messages: BaseMessage[]) {
+    const fn = this.createWasmFunction(this.wasmInstance.process_state);
+
+    return fn(JSON.stringify(stateData), JSON.stringify(messages));
   }
 }

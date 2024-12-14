@@ -1,36 +1,42 @@
 {
-  "name": "@hashgraphonline/wasm-bridge",
+  "name": "@hashgraphonline/hcs-7-toolkit",
   "version": "1.0.2",
-  "description": "WASM Bridge capable of executing HCS-7 operations. Includes an example WASM binary for testing.",
+  "description": "WASM + EVM Bridge capable of executing HCS-7 operations. Includes an example WASM binary for testing.",
   "author": "kantorcodes",
   "type": "module",
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/wasm-bridge.umd.cjs",
-  "module": "./dist/wasm-bridge.js",
-  "types": "./dist/wasm-bridge.d.ts",
+  "main": "./dist/hcs-7-toolkit.umd.cjs",
+  "module": "./dist/hcs-7-toolkit.js",
+  "types": "./dist/ts/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/wasm-bridge.js",
-      "require": "./dist/wasm-bridge.umd.cjs",
-      "types": "./dist/wasm-bridge.d.ts"
+      "import": "./dist/hcs-7-toolkit.js",
+      "require": "./dist/hcs-7-toolkit.umd.cjs",
+      "types": "./dist/ts/index.d.ts"
     }
   },
+  "files": [
+    "dist",
+    "pkg",
+    "README.md"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:rust && vite build",
-    "build:rust": "wasm-pack build --target nodejs",
+    "build": "vite build",
     "preview": "vite preview",
-    "try-wasm": "node --loader ts-node/esm index.ts",
-    "create-hcs-7-topic": "ts-node create-hcs-7-topic.ts"
+    "try-wasm": "node --loader ts-node/esm src/examples/index.ts",
+    "create-topic": "node --loader ts-node/esm src/examples/create-hcs-7-topic.ts",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.55.1",
+    "@hashgraphonline/hashinal-wc": "^1.0.91",
     "dotenv": "^16.4.7",
+    "ethers": "^6.13.4",
+    "ioredis": "^5.3.2",
     "long": "^5.2.3"
   },
   "devDependencies": {
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^20.0.0",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "ts-node": "^10.9.2",
@@ -39,6 +45,7 @@
     "vite-plugin-dts": "^3.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

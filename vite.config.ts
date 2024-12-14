@@ -1,36 +1,38 @@
 import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
 import { resolve } from 'path';
-import nodePolyfillsPlugin from 'rollup-plugin-polyfill-node';
+import dts from 'vite-plugin-dts';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'wasm-bridge.ts'),
-      name: 'WasmPriceChecker',
-      fileName: 'wasm-bridge',
+      entry: resolve(__dirname, 'src/ts/index.ts'),
+      name: 'Hcs7Toolkit',
+      fileName: 'hcs-7-toolkit',
       formats: ['es', 'umd']
     },
     rollupOptions: {
-      plugins: [nodePolyfillsPlugin()],
-      external: ['util'],
+      external: [
+        '@hashgraph/sdk',
+        'dotenv',
+        'ethers',
+        'long',
+        'ioredis'
+      ],
       output: {
         globals: {
-          util: 'util'
+          '@hashgraph/sdk': 'HashgraphSDK',
+          'ethers': 'ethers',
+          'long': 'Long',
+          'ioredis': 'Redis'
         }
       }
-    },
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true
     }
   },
-  optimizeDeps: {
-    include: ['long']
-  },
   plugins: [
-    dts({
-      insertTypesEntry: true,
+    dts(),
+    nodePolyfills({
+      include: ['util']
     })
   ]
 });
