@@ -48,6 +48,8 @@ export interface WasmExports extends WebAssembly.Exports {
   __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   __wbindgen_free: (a: number, b: number, c: number) => void;
   memory: WebAssembly.Memory;
+  process_state: (state_json: string, messages_json: string) => string;
+  get_params: () => string;
   [key: string]: any;
 }
 
@@ -244,5 +246,10 @@ export class WasmBridge {
     const fn = this.createWasmFunction(this.wasmInstance.process_state);
 
     return fn(JSON.stringify(stateData), JSON.stringify(messages));
+  }
+
+  getParams(): string {
+    const fn = this.createWasmFunction(this.wasmInstance.get_params);
+    return fn();
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hashgraphonline/hcs-7-toolkit",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "WASM + EVM Bridge capable of executing HCS-7 operations. Includes an example WASM binary for testing.",
   "author": "kantorcodes",
   "type": "module",
@@ -21,17 +21,17 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run build:wasm",
+    "build:wasm": "wasm-pack build --target nodejs",
     "preview": "vite preview",
     "try-wasm": "node --loader ts-node/esm src/examples/index.ts",
     "create-topic": "node --loader ts-node/esm src/examples/create-hcs-7-topic.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@hashgraph/sdk": "^2.55.1",
-    "@hashgraphonline/hashinal-wc": "^1.0.91",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.4",
+    "idb": "^8.0.0",
     "ioredis": "^5.3.2",
     "long": "^5.2.3"
   },

@@ -49,7 +49,7 @@ export const wasmConfig: WASMConfig = {
   op: 'register-config',
   t: 'wasm',
   c: {
-    wasmTopicId: '0.0.5265732',
+    wasmTopicId: '0.0.5269810',
     inputType: {
       stateData: {
         minted: 'number',

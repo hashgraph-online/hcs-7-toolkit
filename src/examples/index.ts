@@ -29,10 +29,14 @@ async function main() {
 
   const wasmBytes = await response.arrayBuffer();
 
+
   const bridge = new WasmBridge();
   const evmBridge = new EVMBridge('mainnet-public');
 
+  // Test get_params
   await bridge.initWasm(wasmBytes);
+  const params = bridge.getParams();
+  console.log('Required Parameters:', params);
 
   // Execute all EVM commands in one shot
   const { results, stateData } = await evmBridge.executeCommands([

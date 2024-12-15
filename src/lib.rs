@@ -49,6 +49,15 @@ pub fn process_state(state_json: &str, messages_json: &str) -> String {
         .to_string()
 }
 
+#[wasm_bindgen]
+pub fn get_params() -> String {
+    let params = serde_json::json!({
+        "minted": "number",
+        "tokensRemaining": "number"
+    });
+    serde_json::to_string(&params).unwrap_or_default()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

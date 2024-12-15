@@ -1,5 +1,5 @@
 [package]
-name = "rust-wasm-price-checker"
+name = "hcs-7-toolkit"
 version = "0.1.0"
 edition = "2021"
 
