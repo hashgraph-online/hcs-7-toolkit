@@ -1,6 +1,6 @@
 {
   "name": "@hashgraphonline/hcs-7-toolkit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "WASM + EVM Bridge capable of executing HCS-7 operations. Includes an example WASM binary for testing.",
   "author": "kantorcodes",
   "type": "module",
@@ -29,6 +29,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@hashgraph/sdk": "^2.55.1",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.4",
     "idb": "^8.0.0",
@@ -47,5 +48,6 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  }
+  },
+  "packageManager": "yarn@3.6.1+sha512.de524adec81a6c3d7a26d936d439d2832e351cdfc5728f9d91f3fc85dd20b04391c038e9b4ecab11cae2b0dd9f0d55fd355af766bc5c1a7f8d25d96bb2a0b2ca"
 }

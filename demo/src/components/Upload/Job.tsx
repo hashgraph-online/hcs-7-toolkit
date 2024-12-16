@@ -1,0 +1,35 @@
+export interface Job {
+  name: string;
+  id?: string;
+  imageURL?: string;
+  jsonFileURL?: string;
+  completed?: boolean;
+  topic_id: string;
+  jsonTopicId: string;
+  registryTopicId: string;
+  registrySubmissionKey: string;
+  fileStandard?: 1 | 2 | 6 | 7;
+  messages?: number;
+  maxMessages?: number;
+  network?: string;
+  mimeType?: string;
+  jsonMimeType?: string;
+  locked: boolean;
+  status?: string;
+  updatedAt?: Date;
+  createdAt?: Date;
+  holderId?: string;
+  tx_id: string;
+  hash?: string;
+  jsonHash?: string;
+  ttl?: number;
+  inscriptionId?: number;
+  inscriptionTopicId?: string;
+  inscriberAccount?: string;
+  tokenId?: string;
+  mode?: string;
+  creator?: string;
+  description?: string;
+  errors?: Error[];
+  type: "upload";
+}
