@@ -41,7 +41,7 @@ export class EVMBridge {
   constructor(
     network: string = 'mainnet-public',
     mirrorNodeUrl: string = `mirrornode.hedera.com/api/v1/contracts/call`,
-    cache?: EVMCache
+    cache?: EVMCache,
   ) {
     this.network = network;
     this.mirrorNodeUrl = mirrorNodeUrl;
@@ -50,12 +50,12 @@ export class EVMBridge {
 
   async executeCommands(
     evmConfigs: EVMConfig[],
-    initialState: Record<string, string> = {}
+    initialState: Record<string, string> = {},
   ): Promise<{
     results: Record<string, any>;
-    stateData: Record<string, string>;
+    stateData: Record<string, any>;
   }> {
-    let stateData = { ...initialState };
+    let stateData: Record<string, any> = { ...initialState };
     const results: Record<string, any> = {};
 
     for (const config of evmConfigs) {
@@ -65,8 +65,7 @@ export class EVMBridge {
       const cachedResult = await this.cache.get(cacheKey);
       if (cachedResult) {
         results[config.c.abi.name] = JSON.parse(cachedResult);
-        const stateKey = config.c.abi.outputs?.[0]?.name || config.c.abi.name;
-        stateData[stateKey] = cachedResult;
+        Object.assign(stateData, results[config.c.abi.name]); // Flatten the values into stateData
         continue;
       }
 
@@ -78,64 +77,62 @@ export class EVMBridge {
         ]);
         const command = iface.encodeFunctionData(config.c.abi.name);
         const contractId = ContractId.fromSolidityAddress(
-          config.c.contractAddress
+          config.c.contractAddress,
         );
 
         const result = await this.readFromMirrorNode(
           command,
           AccountId.fromString('0.0.800'),
-          contractId
+          contractId,
         );
+
+        console.log(`Result for ${config.c.contractAddress}:`, result?.result);
 
         if (!result?.result) {
           console.warn(
-            `Failed to get result from mirror node for ${config.c.contractAddress}`
+            `Failed to get result from mirror node for ${config.c.contractAddress}`,
           );
           results[config.c.abi.name] = '0';
-          const stateKey = config.c.abi.outputs?.[0]?.name || config.c.abi.name;
-          stateData[stateKey] = '0';
+          Object.assign(stateData, results[config.c.abi.name]); // Flatten the values into stateData
           continue;
         }
 
-        const decodedResult = iface
-          ?.decodeFunctionResult(config.c.abi.name, result.result)
-          ?.reduce((acc, val, idx) => {
-            const output = config.c.abi.outputs?.[idx];
-            if (output?.name) {
-              // Handle different types according to ABI
-              if (output.type.startsWith('uint') || output.type.startsWith('int')) {
-                acc[output.name] = val.toString();
-              } else if (output.type === 'bool') {
-                acc[output.name] = val;
-              } else if (output.type === 'string') {
-                acc[output.name] = val;
-              } else if (output.type === 'address') {
-                acc[output.name] = val.toLowerCase();
-              } else if (output.type.endsWith('[]')) {
-                // Handle arrays
-                acc[output.name] = Array.isArray(val) ? val.map(v => v.toString()) : [];
-              } else {
-                // Default to string conversion for unknown types
-                acc[output.name] = val.toString();
-              }
+        const decodedResult = iface?.decodeFunctionResult(config.c.abi.name, result.result);
+        let processedResult: Record<string, any> = {
+          values: [] // Initialize array for values
+        };
+
+        // Handle tuple returns and array-like results
+        if (decodedResult) {
+          // For tuples, ethers.js provides both array-like and named properties
+          // We want to use the array-like access to ensure we get each value in order
+          config.c.abi.outputs?.forEach((output, idx) => {
+            const value = decodedResult[idx];
+            const formattedValue = formatValue(value, output.type);
+            
+            // Add to values array
+            processedResult.values.push(formattedValue);
+            
+            // Add as named property if name exists
+            if (output.name) {
+              processedResult[output.name] = formattedValue;
             }
-            return acc;
-          }, {} as Record<string, any>) || {};
+          });
+        }
 
         // Cache the result
-        await this.cache.set(cacheKey, JSON.stringify(decodedResult));
-        results[config.c.abi.name] = decodedResult;
-
-        const stateKey = config.c.abi.outputs?.[0]?.name || config.c.abi.name;
-        stateData[stateKey] = JSON.stringify(decodedResult);
+        await this.cache.set(cacheKey, JSON.stringify(processedResult));
+        
+        // Store in results and stateData with function name structure
+        results[config.c.abi.name] = processedResult;
+        stateData[config.c.abi.name] = processedResult;
       } catch (error) {
         console.error(
           `Error executing command for ${config.c.contractAddress}:`,
-          error
+          error,
         );
         results[config.c.abi.name] = '0';
-        const stateKey = config.c.abi.outputs?.[0]?.name || config.c.abi.name;
-        stateData[stateKey] = '0';
+        Object.assign(stateData, results[config.c.abi.name]); // Flatten the values into stateData
       }
     }
 
@@ -144,11 +141,11 @@ export class EVMBridge {
 
   async executeCommand(
     evmConfig: EVMConfig,
-    stateData: Record<string, string> = {}
+    stateData: Record<string, string> = {},
   ): Promise<any> {
     const { results, stateData: newStateData } = await this.executeCommands(
       [evmConfig],
-      stateData
+      stateData,
     );
     return {
       result: results[evmConfig.c.abi.name],
@@ -159,7 +156,7 @@ export class EVMBridge {
   async readFromMirrorNode(
     command: string,
     from: AccountId,
-    to: ContractId
+    to: ContractId,
   ): Promise<any> {
     try {
       const toAddress = to.toSolidityAddress();
@@ -183,7 +180,7 @@ export class EVMBridge {
             to: toAddress?.startsWith('0x') ? toAddress : `0x${toAddress}`,
             value: 0,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -205,8 +202,42 @@ export class EVMBridge {
   // Add method to remove specific cache entry
   public async clearCacheForContract(
     contractAddress: string,
-    functionName: string
+    functionName: string,
   ): Promise<void> {
     await this.cache.delete(`${contractAddress}-${functionName}`);
   }
+}
+
+function formatValue(value: any, type: string): string {
+  if (value === null || value === undefined) {
+    return '0';
+  }
+
+  // Handle BigNumber objects from ethers.js
+  if (value._isBigNumber) {
+    return value.toString();
+  }
+
+  if (type.startsWith('uint') || type.startsWith('int')) {
+    return String(value);
+  } else if (type === 'bool') {
+    return value ? 'true' : 'false';
+  } else if (type === 'string') {
+    return value;
+  } else if (type === 'address') {
+    return String(value).toLowerCase();
+  } else if (type.endsWith('[]')) {
+    // Handle arrays
+    // @ts-ignore
+    return Array.isArray(value) ? value.map(v => String(v)) : [];
+  } else {
+    // Default to string conversion for unknown types
+    return String(value);
+  }
+}
+
+function getOutputType(outputs: any[] | undefined, key: string): string {
+  if (!outputs) return 'unknown';
+  const output = outputs.find(o => o.name === key);
+  return output?.type || 'unknown';
 }

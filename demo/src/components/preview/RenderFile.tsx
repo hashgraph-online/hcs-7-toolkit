@@ -1,6 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
+const GlbViewer = dynamic(() => import("./GlbViewer"), {
+  ssr: false,
+});
 
 interface RenderFileProps {
   mimeType?: string;
@@ -14,12 +19,17 @@ export function RenderFile({
   mimeType,
   url,
   height = 400,
-  width = '100%',
-  className = '',
-}: RenderFileProps): JSX.Element {
+  width = "100%",
+  className = "",
+}: RenderFileProps): JSX.Element | null {
   const [fileType, setFileType] = useState<string | null>(null);
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const isHTML =
+    mimeType?.startsWith("text/html") ||
+    mimeType?.startsWith("index/html") ||
+    mimeType?.includes("application/xml");
 
   useEffect(() => {
     if (!url) return;
@@ -27,18 +37,18 @@ export function RenderFile({
     const fetchContent = async () => {
       try {
         const response = await fetch(url);
-        const contentType = response.headers.get('content-type');
+        const contentType = response.headers.get("content-type");
         setFileType(contentType);
 
-        if (contentType?.includes('application/json')) {
+        if (contentType?.includes("application/json")) {
           const json = await response.json();
           setContent(JSON.stringify(json, null, 2));
-        } else if (contentType?.includes('text/')) {
+        } else if (contentType?.includes("text/")) {
           const text = await response.text();
           setContent(text);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load content');
+        setError(err instanceof Error ? err.message : "Failed to load content");
       }
     };
 
@@ -55,31 +65,44 @@ export function RenderFile({
 
   // Try to determine mime type from URL if not provided
   if (!mimeType && url) {
-    const extension = url.split('.').pop()?.toLowerCase();
+    const extension = url.split(".").pop()?.toLowerCase();
     if (extension) {
       switch (extension) {
-        case 'jpg':
-        case 'jpeg':
-          mimeType = 'image/jpeg';
+        case "jpg":
+        case "jpeg":
+          mimeType = "image/jpeg";
           break;
-        case 'png':
-          mimeType = 'image/png';
+        case "png":
+          mimeType = "image/png";
           break;
-        case 'gif':
-          mimeType = 'image/gif';
+        case "gif":
+          mimeType = "image/gif";
           break;
-        case 'mp4':
-          mimeType = 'video/mp4';
+        case "mp4":
+          mimeType = "video/mp4";
           break;
-        case 'mp3':
-          mimeType = 'audio/mpeg';
+        case "mp3":
+          mimeType = "audio/mpeg";
           break;
       }
     }
   }
 
+  {
+    isHTML && (
+      <iframe
+        className={`${className} bg-white`}
+        width={width}
+        height={height}
+        src={url}
+        sandbox="allow-same-origin allow-scripts"
+        frameBorder={0}
+      />
+    );
+  }
+
   // Handle JSON and text content
-  if (fileType.includes('application/json') || fileType.includes('text/')) {
+  if (fileType.includes("application/json") || fileType.includes("text/")) {
     return (
       <pre
         className={`bg-gray-50 p-4 rounded-lg overflow-auto font-mono text-sm ${className}`}
@@ -90,7 +113,7 @@ export function RenderFile({
     );
   }
 
-  if (mimeType?.startsWith('video/')) {
+  if (mimeType?.startsWith("video/")) {
     return (
       <video
         controls
@@ -103,7 +126,7 @@ export function RenderFile({
     );
   }
 
-  if (mimeType?.startsWith('audio/')) {
+  if (mimeType?.startsWith("audio/")) {
     return (
       <audio
         controls
@@ -116,13 +139,22 @@ export function RenderFile({
     );
   }
 
-  // Default to image
-  return (
-    <img
-      src={url}
-      alt="Preview"
-      className={`${className}`}
-      style={{ width, height }}
-    />
-  );
+  if (mimeType?.startsWith("image/")) {
+    return (
+      <img
+        src={url}
+        alt="Preview"
+        className={`${className}`}
+        style={{ width, height }}
+      />
+    );
+  }
+
+  if (mimeType?.startsWith("model/")) {
+    return (
+      <GlbViewer src={url} width={Number(width)} height={Number(height)} />
+    );
+  }
+
+  return null;
 }

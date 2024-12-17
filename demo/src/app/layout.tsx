@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { WalletProvider } from "@/context/WalletContext";
 import "./globals.css";
 import Head from "next/head";
+import { ModalProvider } from "@/context/ModalContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,7 +70,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <WalletProvider>{children}</WalletProvider>
+        <WalletProvider>
+          <ModalProvider>{children}</ModalProvider>
+        </WalletProvider>
       </body>
     </html>
   );

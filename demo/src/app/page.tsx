@@ -335,9 +335,9 @@ export default function Page() {
 
                   {/* How It Works */}
                   <div className="bg-white/50 dark:bg-gray-800/50 rounded-xl p-6 mb-8">
-                    <h3 className="text-2xl font-bold mb-6 text-center">
+                    <h2 className="text-2xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                       How It Works
-                    </h3>
+                    </h2>
 
                     <MobileHowItWorks />
                     <DesktopHowItWorks />
@@ -391,7 +391,7 @@ export default function Page() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 blur-3xl -z-10"></div>
 
                     <div className="text-center mb-12">
-                      <h2 className="text-3xl font-bold mb-6">
+                      <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                         Example: Dynamic NFT Content
                       </h2>
                       <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
@@ -440,7 +440,7 @@ export default function Page() {
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h4 className="text-xl font-bold">
+                              <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                                 Even State NFT
                               </h4>
                               <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -454,6 +454,7 @@ export default function Page() {
                           <RenderFile
                             url={`https://kiloscribe.com/api/inscription-cdn/0.0.5270226?network=testnet`}
                             className="block w-full aspect-square object-contain"
+                            mimeType="image/png"
                           />
                           <div className="mt-4">
                             <button
@@ -496,7 +497,7 @@ export default function Page() {
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h4 className="text-xl font-bold">
+                              <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                                 Odd State NFT
                               </h4>
                               <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -510,6 +511,7 @@ export default function Page() {
                           <RenderFile
                             url={`https://kiloscribe.com/api/inscription-cdn/0.0.5270238?network=testnet`}
                             className="block w-full aspect-square object-contain"
+                            mimeType="image/png"
                           />
                           <div className="mt-4">
                             <button
@@ -553,7 +555,7 @@ export default function Page() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 blur-3xl -z-10"></div>
 
                     <div className="text-center mb-12">
-                      <h2 className="text-3xl font-bold mb-6">
+                      <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                         Example: Dynamic Banner Content
                       </h2>
                       <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
@@ -569,7 +571,7 @@ export default function Page() {
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h4 className="text-xl font-bold">
+                              <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                                 Even State Banner
                               </h4>
                               <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -593,7 +595,7 @@ export default function Page() {
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h4 className="text-xl font-bold">
+                              <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                                 Odd State Banner
                               </h4>
                               <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -618,7 +620,7 @@ export default function Page() {
                   <div className="mt-16 relative isolate overflow-hidden bg-gradient-to-b from-[#6100ff]/5 to-[#6100ff]/10 rounded-3xl">
                     <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8">
                       <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl bg-gradient-to-r from-[#6100ff] to-purple-600 bg-clip-text text-transparent">
+                        <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                           Dive Deeper
                         </h2>
                         <p className="mt-6 text-lg leading-8 text-gray-600">
@@ -674,7 +676,7 @@ export default function Page() {
               <TabsContent value="try" className="mt-6">
                 <div className="max-w-5xl mx-auto">
                   <div className="text-center mb-8">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-black dark:text-white">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                       Mint Your First Smart Hashinal
                     </h2>
                     <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
@@ -696,7 +698,7 @@ export default function Page() {
 
                     <div className="space-y-6">
                       <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-semibold mb-4">
+                        <h3 className="text-xl font-semibold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                           Mint Your First Smart Hashinal
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -781,7 +783,7 @@ export default function Page() {
                       <div className="p-8">
                         <div className="grid md:grid-cols-2 gap-8">
                           <div>
-                            <h3 className="text-2xl font-bold mb-4">
+                            <h3 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                               Create Your Own LaunchPage
                             </h3>
                             <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -860,7 +862,7 @@ export default function Page() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 rounded-2xl"></div>
                     <div className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8">
                       <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold mb-4">
+                        <h3 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                           Explore the Smart Contracts
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
@@ -893,7 +895,7 @@ export default function Page() {
                               </svg>
                             </div>
                             <div>
-                              <h4 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                              <h4 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                                 LaunchPage Contracts
                               </h4>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -927,7 +929,7 @@ export default function Page() {
                               </svg>
                             </div>
                             <div>
-                              <h4 className="text-lg font-semibold mb-2 group-hover:text-secondary transition-colors">
+                              <h4 className="text-lg font-semibold mb-2 group-hover:text-secondary transition-colors bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                                 Example LaunchPage
                               </h4>
                               <p className="text-sm text-gray-600 dark:text-gray-400">

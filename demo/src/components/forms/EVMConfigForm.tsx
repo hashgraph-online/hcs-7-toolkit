@@ -21,13 +21,13 @@ const CONTRACT_OPTIONS = [
     type: 'launchpage'
   },
   {
-    address: '0x058fE79CB5775d4b167920Ca6036B824805A9ABd',
-    label: 'ChainLink BTC / USD',
+    address: '0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a',
+    label: 'ChainLink HBAR / USD',
     type: 'chainlink'
   },
   {
-    address: '0xdA2aBF7C90aDC73CDF5cA8d720B87bD5F5863389',
-    label: 'ChainLink DAI / USD',
+    address: '0x058fE79CB5775d4b167920Ca6036B824805A9ABd',
+    label: 'ChainLink BTC / USD',
     type: 'chainlink'
   },
   {
@@ -36,8 +36,8 @@ const CONTRACT_OPTIONS = [
     type: 'chainlink'
   },
   {
-    address: '0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a',
-    label: 'ChainLink HBAR / USD',
+    address: '0xdA2aBF7C90aDC73CDF5cA8d720B87bD5F5863389',
+    label: 'ChainLink DAI / USD',
     type: 'chainlink'
   },
   {
@@ -100,12 +100,45 @@ export function EVMConfigForm({
   const [isLaunchPage, setIsLaunchPage] = useState(false);
   const [functionNames, setFunctionNames] = useState<string[]>([]);
   const [selectedFunction, setSelectedFunction] = useState<any>(null);
+  const [simpleMode, setSimpleMode] = useState(true);
+  const [isTupleOutput, setIsTupleOutput] = useState(false);
+  const [outputFields, setOutputFields] = useState<Array<{name: string, type: string}>>([{name: '', type: ''}]);
+
+  const SOLIDITY_TYPES = [
+    // Integers
+    'uint8', 'uint16', 'uint32', 'uint64', 'uint80', 'uint128', 'uint256',
+    'int8', 'int16', 'int32', 'int64', 'int128', 'int256',
+    // Address
+    'address',
+    // Boolean
+    'bool',
+    // Strings and Bytes
+    'string', 'bytes', 'bytes32',
+  ];
 
   const contractAddress = watch('contractAddress');
   const functionName = watch('functionName');
   const contractAddressSelect = watch('contractAddressSelect');
 
   const isPredeterminedContract = contractAddressSelect !== 'custom';
+
+  const addOutputField = () => {
+    setOutputFields([...outputFields, {name: '', type: ''}]);
+  };
+
+  const removeOutputField = (index: number) => {
+    if (outputFields.length > 1) {
+      const newFields = [...outputFields];
+      newFields.splice(index, 1);
+      setOutputFields(newFields);
+    }
+  };
+
+  const updateOutputField = (index: number, field: 'name' | 'type', value: string) => {
+    const newFields = [...outputFields];
+    newFields[index][field] = value;
+    setOutputFields(newFields);
+  };
 
   useEffect(() => {
     // If defaultValues has a contract address that's not in our options, set to custom
@@ -131,7 +164,8 @@ export function EVMConfigForm({
               item.type === 'function' && 
               item.stateMutability === 'view' &&
               item.outputs?.length === 1 && // Must have exactly one output
-              (!item.inputs || item.inputs.length === 0) // Must have no inputs
+              (!item.inputs || item.inputs.length === 0) && // Must have no inputs
+              (!simpleMode || ['minted', 'tokensRemaining'].includes(item.name)) // Filter for simple mode
             )
             .map(item => item.name);
           setFunctionNames(viewFunctions);
@@ -143,7 +177,8 @@ export function EVMConfigForm({
               .filter(item => 
                 item.type === 'function' && 
                 item.stateMutability === 'view' &&
-                (!item.inputs || item.inputs.length === 0) // Must have no inputs
+                (!item.inputs || item.inputs.length === 0) && // Must have no inputs
+                (!simpleMode || item.name === 'latestRoundData') // Filter for simple mode
               )
               .map(item => item.name);
             setFunctionNames(viewFunctions);
@@ -152,7 +187,7 @@ export function EVMConfigForm({
       }
     };
     checkContract();
-  }, [contractAddress, setValue]);
+  }, [contractAddress, setValue, simpleMode]);
 
   useEffect(() => {
     if (functionName) {
@@ -172,17 +207,47 @@ export function EVMConfigForm({
             item.type === 'function' && item.name === functionName
           );
           setSelectedFunction(funcDef);
-          if (funcDef && funcDef.outputs?.[0]) {
-            setValue('outputType', funcDef.outputs[0].type);
-            setValue('outputName', funcDef.outputs[0].name || funcDef.name);
+          if (funcDef && funcDef.outputs) {
+            // For Chainlink's latestRoundData, include all tuple components
+            if (funcDef.name === 'latestRoundData') {
+              // Pass the entire outputs array to maintain the tuple structure
+              setValue('outputType', 'tuple');
+              setValue('outputName', funcDef.name);
+              setValue('outputs', funcDef.outputs);
+            } else {
+              setValue('outputType', funcDef.outputs[0].type);
+              setValue('outputName', funcDef.outputs[0].name || funcDef.name);
+              setValue('outputs', null);
+            }
           }
         }
       }
     }
   }, [functionName, isLaunchPage, contractAddress, setValue]);
 
+  const handleFormSubmit = (data: any) => {
+    // Prepare the form data
+    const formData = {
+      ...data,
+      abi: {
+        inputs: [],
+        name: data.functionName,
+        outputs: isPredeterminedContract ? data.outputs : 
+          outputFields.filter(field => field.name && field.type).map(field => ({
+            name: field.name,
+            type: field.type
+          })),
+        stateMutability: "view",
+        type: "function"
+      }
+    };
+    
+    // Submit the form data
+    onSubmit(formData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
       <div className="space-y-4">
         <div className="bg-purple-50 rounded-lg p-4 mb-4">
           <p className="text-sm text-purple-800">
@@ -192,6 +257,20 @@ export function EVMConfigForm({
             NFT mints, or price thresholds.
           </p>
         </div>
+
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="simpleMode"
+            checked={simpleMode}
+            onChange={(e) => setSimpleMode(e.target.checked)}
+            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+          />
+          <label htmlFor="simpleMode" className="ml-2 text-sm text-gray-600">
+            Simple Mode (Show recommended functions only)
+          </label>
+        </div>
+
         <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-4">
           <div className={formStyles.formGroup}>
             <Label className="text-sm font-medium text-gray-700">Contract Address</Label>
@@ -279,53 +358,152 @@ export function EVMConfigForm({
                 {errors.functionName.message}
               </p>
             )}
+            <p className="mt-1 text-xs text-gray-500">
+              Select a function from the contract to read state from
+            </p>
           </div>
 
-          <div className={formStyles.formGroup}>
-            <Label className="text-sm font-medium text-gray-700">Output Type</Label>
-            <Input
-              {...register('outputType', { required: 'Output type is required' })}
-              placeholder="uint256"
-              disabled={isPredeterminedContract}
-              className={errors.outputType ? 'border-red-500 focus:ring-red-200' : ''}
-            />
-            {errors.outputType && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.outputType.message}
-              </p>
-            )}
-            {isPredeterminedContract && (
+          {!isPredeterminedContract && (
+            <div className={formStyles.formGroup}>
+              <Label className="text-sm font-medium text-gray-700">Function Output Structure</Label>
+              <div className="mt-2">
+                <div className="flex items-center mb-3">
+                  <input
+                    type="checkbox"
+                    id="isTupleOutput"
+                    checked={isTupleOutput}
+                    onChange={(e) => {
+                      setIsTupleOutput(e.target.checked);
+                      if (!e.target.checked) {
+                        setOutputFields([{name: '', type: ''}]);
+                      }
+                    }}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isTupleOutput" className="ml-2 text-sm text-gray-600">
+                    This function returns multiple values (tuple)
+                  </label>
+                </div>
+
+                {isTupleOutput ? (
+                  <div className="space-y-3">
+                    {outputFields.map((field, index) => (
+                      <div key={index} className="flex space-x-2">
+                        <div className="flex-1">
+                          <Input
+                            value={field.name}
+                            onChange={(e) => updateOutputField(index, 'name', e.target.value)}
+                            placeholder="Output name (e.g., roundId)"
+                            className="text-sm"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Select
+                            value={field.type}
+                            onValueChange={(value) => updateOutputField(index, 'type', value)}
+                          >
+                            <SelectTrigger className="text-sm">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {SOLIDITY_TYPES.map(type => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {outputFields.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeOutputField(index)}
+                            className="px-2 py-1 text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addOutputField}
+                      className="mt-2 text-sm text-purple-600 hover:text-purple-800"
+                    >
+                      + Add Output Field
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Input
+                      value={outputFields[0].name}
+                      onChange={(e) => updateOutputField(0, 'name', e.target.value)}
+                      placeholder="Output name (e.g., supply)"
+                      className="text-sm mb-2"
+                    />
+                    <Select
+                      value={outputFields[0].type}
+                      onValueChange={(value) => updateOutputField(0, 'type', value)}
+                    >
+                      <SelectTrigger className="text-sm">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SOLIDITY_TYPES.map(type => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <p className="mt-2 text-xs text-gray-500">
+                  {isTupleOutput 
+                    ? "Specify the name and type for each output value returned by the function"
+                    : "Specify the name and type for the output value returned by the function"
+                  }
+                </p>
+              </div>
+            </div>
+          )}
+
+          {selectedFunction && (
+            <div className={formStyles.formGroup}>
+              <Label className="text-sm font-medium text-gray-700">Function Output</Label>
+              <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                {selectedFunction.outputs?.length > 1 ? (
+                  <>
+                    <p className="text-sm text-gray-700 mb-2">
+                      <span className="font-medium">{selectedFunction.name}</span> returns:
+                    </p>
+                    <div className="space-y-1">
+                      {selectedFunction.outputs.map((output: any, index: number) => (
+                        <div key={index} className="text-sm">
+                          <span className="font-medium text-gray-900">{output.name || `output${index}`}</span>
+                          <span className="text-gray-500 ml-2">({output.type})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">{selectedFunction.name}</span> returns: {' '}
+                    <span className="font-medium">{selectedFunction.outputs?.[0]?.type || 'unknown'}</span>
+                    {selectedFunction.outputs?.[0]?.name && (
+                      <span className="text-gray-500 ml-2">({selectedFunction.outputs[0].name})</span>
+                    )}
+                  </p>
+                )}
+              </div>
               <p className="mt-1 text-xs text-gray-500">
-                Output type is automatically set for predetermined contracts
-              </p>
-            )}
-          </div>
-
-          <div className={formStyles.formGroup}>
-            <Label className="text-sm font-medium text-gray-700">Output Name</Label>
-            <Input
-              {...register('outputName', { 
-                required: 'Output name is required',
-                pattern: {
-                  value: /^[a-zA-Z_][a-zA-Z0-9_]*$/,
-                  message: 'Must be a valid variable name (letters, numbers, underscores)'
+                {selectedFunction.outputs?.length > 1 
+                  ? "All these outputs will be available in your WASM module"
+                  : "This output will be available in your WASM module"
                 }
-              })}
-              placeholder="supply"
-              disabled={isPredeterminedContract}
-              className={errors.outputName ? 'border-red-500 focus:ring-red-200' : ''}
-            />
-            {errors.outputName && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.outputName.message}
               </p>
-            )}
-            {isPredeterminedContract && (
-              <p className="mt-1 text-xs text-gray-500">
-                Output name is automatically set for predetermined contracts
-              </p>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className={formStyles.formGroup}>
             <Label className="text-sm font-medium text-gray-700">Memo</Label>

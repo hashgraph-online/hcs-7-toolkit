@@ -1,4 +1,4 @@
-import { FormData } from '@/types/form';
+import { FormData } from "@/types/form";
 
 export interface BaseMessage {
   p: string;
@@ -15,7 +15,7 @@ export interface HCS1RegistrationMessage extends BaseMessage {
 }
 
 export interface EVMConfigMessage extends BaseMessage {
-  t: 'evm';
+  t: "evm";
   c: {
     contractAddress: string;
     abi: {
@@ -27,14 +27,14 @@ export interface EVMConfigMessage extends BaseMessage {
           type: string;
         }
       ];
-      stateMutability: 'view';
-      type: 'function';
+      stateMutability: "view";
+      type: "function";
     };
   };
 }
 
 export interface WASMConfigMessage extends BaseMessage {
-  t: 'wasm';
+  t: "wasm";
   c: {
     wasmTopicId: string;
     inputType: {
@@ -54,9 +54,9 @@ export const createRegistrationMessage = (
   tags: string[]
 ): HCS1RegistrationMessage => {
   return {
-    p: 'hcs-7',
-    op: 'register',
-    t_id: topicId,
+    p: "hcs-7",
+    op: "register",
+    t_id: topicId.replace("hcs://1/", ""),
     m: memo,
     d: {
       weight,
@@ -72,23 +72,35 @@ export const createEvmConfig = (data: {
   outputType: string;
   memo: string;
 }): EVMConfigMessage => {
+  // For Chainlink's latestRoundData, include all outputs
+  const outputs =
+    data.functionName === "latestRoundData"
+      ? [
+          { name: "roundId", type: "uint80" },
+          { name: "answer", type: "int256" },
+          { name: "startedAt", type: "uint256" },
+          { name: "updatedAt", type: "uint256" },
+          { name: "answeredInRound", type: "uint80" },
+        ]
+      : [
+          {
+            name: data.outputName,
+            type: data.outputType,
+          },
+        ];
+
   return {
-    p: 'hcs-7',
-    op: 'register-config',
-    t: 'evm',
+    p: "hcs-7",
+    op: "register-config",
+    t: "evm",
     c: {
       contractAddress: data.contractAddress,
       abi: {
         inputs: [],
         name: data.functionName,
-        outputs: [
-          {
-            name: data.outputName,
-            type: data.outputType,
-          },
-        ],
-        stateMutability: 'view',
-        type: 'function',
+        outputs,
+        stateMutability: "view",
+        type: "function",
       },
     },
     m: data.memo,
@@ -101,17 +113,17 @@ export const createWasmConfig = (config: {
   memo: string;
 }): WASMConfigMessage => {
   return {
-    p: 'hcs-7',
-    op: 'register-config',
-    t: 'wasm',
+    p: "hcs-7",
+    op: "register-config",
+    t: "wasm",
     c: {
       wasmTopicId: config.wasmTopicId,
       inputType: {
         stateData: config.stateData,
       },
       outputType: {
-        type: 'string',
-        format: 'topic-id',
+        type: "string",
+        format: "topic-id",
       },
     },
     m: config.memo,

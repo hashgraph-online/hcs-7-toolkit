@@ -31,5 +31,30 @@ export interface Job {
   creator?: string;
   description?: string;
   errors?: Error[];
-  type: "upload";
+  type: "upload" | "file" | "hashinal" | "hashinal-collection";
+  files?: {
+    imageUploads: {
+      id: number;
+      topicId: string;
+      mimeType: string;
+      hash: string;
+      messages: number;
+      totalMessages: number;
+      completed: boolean;
+      name: string;
+      registryTopicId?: string;
+    }[];
+    metadataUploads: {
+      id: number;
+      topicId: string;
+      mimeType: string;
+      hash: string;
+      messages: number;
+      metadata: any;
+      totalMessages: number;
+      completed: boolean;
+      name: string;
+      registryTopicId?: string;
+    }[];
+  };
 }

@@ -224,27 +224,45 @@ export class WasmBridge {
     return this.wasm;
   }
 
-  createStateData(wasmConfig: WASMConfig, stateData: Record<string, string> = {}) {
-    let dynamicStateData: Record<string, string> = {};
+  createStateData(wasmConfig: WASMConfig, stateData: Record<string, any> = {}) {
+    let dynamicStateData: Record<string, any> = {};
+
     if (wasmConfig?.c?.inputType?.stateData) {
-      // Map each configured state field to its value
-      Object.keys(wasmConfig.c.inputType.stateData).forEach((key) => {
-        if (stateData && key in stateData && stateData[key] !== undefined) {
-          dynamicStateData[key] = String(stateData[key]).replace('-', '');
-        } else {
-          // Use the default value from config if available
-          dynamicStateData[key] = String(
-            wasmConfig.c.inputType.stateData[key] || '0'
-          ).replace('-', '');
-        }
-      });
+      // Special case: if we have latestRoundData with all the fields we need
+      if (stateData.latestRoundData && 
+          Object.keys(wasmConfig.c.inputType.stateData).every(key => key in stateData.latestRoundData)) {
+        // Return the nested structure for Chainlink
+        dynamicStateData.latestRoundData = {};
+        Object.entries(wasmConfig.c.inputType.stateData).forEach(([key, _]) => {
+          dynamicStateData.latestRoundData[key] = String(stateData.latestRoundData[key]);
+        });
+      } else {
+        // Handle flat structure (launchpage case)
+        Object.entries(wasmConfig.c.inputType.stateData).forEach(([key, type]) => {
+          const result = stateData[key];
+          if (result && typeof result === 'object' && 'values' in result && result.values.length > 0) {
+            dynamicStateData[key] = String(result.values[0]);
+          } else {
+            dynamicStateData[key] = this.getDefaultValueForType(type as string);
+          }
+        });
+      }
     }
     return dynamicStateData;
   }
 
+  private getDefaultValueForType(type: string): string {
+    if (type.startsWith('uint') || type.startsWith('int') || type === 'number') {
+      return '0';
+    } else if (type === 'bool') {
+      return 'false';
+    } else {
+      return '';
+    }
+  }
+
   executeWasm(stateData: Record<string, any>, messages: BaseMessage[]) {
     const fn = this.createWasmFunction(this.wasmInstance.process_state);
-
     return fn(JSON.stringify(stateData), JSON.stringify(messages));
   }
 

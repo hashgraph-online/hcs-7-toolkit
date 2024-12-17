@@ -1,6 +1,6 @@
 {
   "name": "@hashgraphonline/hcs-7-toolkit",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "WASM + EVM Bridge capable of executing HCS-7 operations. Includes an example WASM binary for testing.",
   "author": "kantorcodes",
   "type": "module",

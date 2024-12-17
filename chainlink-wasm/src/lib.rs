@@ -90,11 +90,13 @@ pub fn process_chainlink_state(state_json: &str, messages_json: &str) -> String 
 #[wasm_bindgen]
 pub fn get_params() -> String {
     let params = serde_json::json!({
-        "roundId": "uint80",
-        "answer": "int256",
-        "startedAt": "uint256",
-        "updatedAt": "uint256",
-        "answeredInRound": "uint80"
+        "latestRoundData": {
+            "roundId": "uint80",
+            "answer": "int256",
+            "startedAt": "uint256",
+            "updatedAt": "uint256",
+            "answeredInRound": "uint80"
+        }
     });
     serde_json::to_string(&params).unwrap_or_default()
 }

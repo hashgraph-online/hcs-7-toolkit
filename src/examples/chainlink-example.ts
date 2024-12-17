@@ -44,6 +44,8 @@ async function main() {
     const wasmBytes = fs.readFileSync(wasmPath);
     await bridge.initWasm(wasmBytes);
     console.log('WASM initialized');
+    const params = bridge.getParams();
+    console.log('Required Parameters:', params);
 
     const evmBridge = new EVMBridge('testnet');
     console.log('EVM Bridge initialized');
@@ -62,16 +64,41 @@ async function main() {
       m: 'LaunchPage Test Mint',
     };
 
-    console.log('Executing EVM commands...');
-    const command = await evmBridge.executeCommands([evmConfig]);
-    const data = command.results;
-    console.log('EVM data received:', JSON.stringify(data, null, 2));
+    // WASM config for state data processing
+    const wasmConfig = {
+      p: 'hcs-7',
+      op: 'register-config',
+      t: 'wasm',
+      c: {
+        wasmTopicId: '0.0.5277917',
+        inputType: {
+          stateData: {
+            roundId: 'uint80',
+            answer: 'int256',
+            startedAt: 'uint256',
+            updatedAt: 'uint256',
+            answeredInRound: 'uint80',
+          },
+        },
+        outputType: {
+          type: 'string',
+          format: 'topic-id',
+        },
+      },
+      m: 'chain-link-router',
+    };
 
+    console.log('Executing EVM commands...');
+    const { results, stateData } = await evmBridge.executeCommands([evmConfig]);
+
+    console.log('EVM state data:', JSON.stringify(stateData, null, 2));
+    // Create state data using the WASM config
+    const wasmState = bridge.createStateData(wasmConfig, stateData);
+
+    console.log('WASM state data:', JSON.stringify(wasmState, null, 2));
     // Process the state to get the appropriate topic ID
-    const topicId = process_state(
-      JSON.stringify(data),
-      JSON.stringify(messages)
-    );
+    // @ts-ignore
+    const topicId = bridge.executeWasm(wasmState, messages);
 
     console.log('Selected Topic ID:', topicId);
   } catch (error) {
