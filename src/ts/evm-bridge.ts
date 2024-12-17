@@ -64,9 +64,9 @@ export class EVMBridge {
       // Check cache first
       const cachedResult = await this.cache.get(cacheKey);
       if (cachedResult) {
-        results[config.c.abi.name] = cachedResult;
+        results[config.c.abi.name] = JSON.parse(cachedResult);
         const stateKey = config.c.abi.outputs?.[0]?.name || config.c.abi.name;
-        stateData[stateKey] = String(cachedResult);
+        stateData[stateKey] = cachedResult;
         continue;
       }
 
@@ -97,18 +97,37 @@ export class EVMBridge {
           continue;
         }
 
-        const decodedResult = String(
-          iface
-            ?.decodeFunctionResult(config.c.abi.name, result.result)
-            ?.at(0) || '0'
-        );
+        const decodedResult = iface
+          ?.decodeFunctionResult(config.c.abi.name, result.result)
+          ?.reduce((acc, val, idx) => {
+            const output = config.c.abi.outputs?.[idx];
+            if (output?.name) {
+              // Handle different types according to ABI
+              if (output.type.startsWith('uint') || output.type.startsWith('int')) {
+                acc[output.name] = val.toString();
+              } else if (output.type === 'bool') {
+                acc[output.name] = val;
+              } else if (output.type === 'string') {
+                acc[output.name] = val;
+              } else if (output.type === 'address') {
+                acc[output.name] = val.toLowerCase();
+              } else if (output.type.endsWith('[]')) {
+                // Handle arrays
+                acc[output.name] = Array.isArray(val) ? val.map(v => v.toString()) : [];
+              } else {
+                // Default to string conversion for unknown types
+                acc[output.name] = val.toString();
+              }
+            }
+            return acc;
+          }, {} as Record<string, any>) || {};
 
         // Cache the result
-        await this.cache.set(cacheKey, decodedResult);
+        await this.cache.set(cacheKey, JSON.stringify(decodedResult));
         results[config.c.abi.name] = decodedResult;
 
         const stateKey = config.c.abi.outputs?.[0]?.name || config.c.abi.name;
-        stateData[stateKey] = decodedResult;
+        stateData[stateKey] = JSON.stringify(decodedResult);
       } catch (error) {
         console.error(
           `Error executing command for ${config.c.contractAddress}:`,

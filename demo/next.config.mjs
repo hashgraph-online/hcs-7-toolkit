@@ -1,9 +1,13 @@
+import { setupDevPlatform } from "@cloudflare/next-on-pages/next-dev";
+
+if (process.env.NODE_ENV === "development") {
+  await setupDevPlatform();
+}
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  compress: false,
+  compress: true,
   reactStrictMode: true,
   output: "standalone",
-  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -69,10 +73,6 @@ const nextConfig = {
     return config;
   },
   transpilePackages: [],
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-    esmExternals: "loose",
-  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
