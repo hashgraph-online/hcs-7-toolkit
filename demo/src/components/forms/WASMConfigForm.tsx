@@ -79,10 +79,39 @@ export function WASMConfigForm({
   const wasmTopicId = watch("wasmTopicId");
   const topicSelect = watch("topicSelect");
 
+  const isCustomTopic = topicSelect === "custom";
+
+  const CustomTopicMessage = () =>
+    isCustomTopic && (
+      <div className="mt-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+        <p className="text-sm text-white/80 mb-3">
+          To use a custom Topic ID, you'll need to inscribe a WASM module
+          following the{" "}
+          <a
+            href="https://github.com/hedera-dev/hcs-7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-purple-400 hover:text-purple-300 underline"
+          >
+            HCS-7 standard
+          </a>
+          .
+        </p>
+        <button
+          onClick={() =>
+            window.open("https://smart.hashinals.com?network=testnet", "_blank")
+          }
+          className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors duration-200"
+        >
+          Inscribe WASM Module
+        </button>
+      </div>
+    );
+
   useEffect(() => {
     async function fetchWasmParams() {
       if (!wasmTopicId || !network) {
-        console.log("no wasmTopicId or network", wasmTopicId, network);
+        console.error("no wasmTopicId or network", wasmTopicId, network);
         setWasmParams(null);
         setWasmError(null);
         return;
@@ -118,7 +147,6 @@ export function WASMConfigForm({
         const params = bridge.getParams();
         const parsedParams = JSON.parse(params);
 
-        console.log("got params", params, parsedParams);
         setWasmParams(parsedParams);
         setWasmError(null);
       } catch (error) {
@@ -137,7 +165,6 @@ export function WASMConfigForm({
     return count === 0;
   };
 
-  // Helper function to check type compatibility
   const isTypeCompatible = (wasmType: string, evmType: string) => {
     // Map Solidity types to their corresponding WASM types
     const typeMap: Record<string, string[]> = {
@@ -146,37 +173,23 @@ export function WASMConfigForm({
       uint256: ["uint256", "number"],
     };
 
-    // Check if the EVM type is in the mapping for the WASM type
     if (typeMap[evmType]) {
       return typeMap[evmType].includes(wasmType);
     }
 
-    // Default comparison for types not in the mapping
     return wasmType === evmType;
   };
 
-  // Extract state data from EVM configs
-  console.log('Debug - First EVM message:', JSON.stringify(evmMessages[0]?.c?.abi, null, 2));
-  
   const stateData = evmMessages.reduce((acc, msg) => {
-    if (msg.t === 'evm' && msg.c.abi) {
-      console.log('Debug - Processing ABI:', JSON.stringify(msg.c.abi, null, 2));
-      // For each output in the ABI
+    if (msg.t === "evm" && msg.c.abi) {
       msg.c.abi.outputs?.forEach((output: any) => {
-        console.log('Debug - Processing output:', JSON.stringify(output, null, 2));
         if (output.components) {
-          // Handle tuple types
           output.components.forEach((component: any) => {
-            console.log('Debug - Adding component:', component.name, component.type);
             acc[component.name] = component.type;
           });
         } else if (output.name) {
-          // Handle named outputs
-          console.log('Debug - Adding named output:', output.name, output.type);
           acc[output.name] = output.type;
         } else {
-          // Handle unnamed outputs using function name
-          console.log('Debug - Adding unnamed output:', msg.c.abi.name, output.type);
           acc[msg.c.abi.name] = output.type;
         }
       });
@@ -184,38 +197,37 @@ export function WASMConfigForm({
     return acc;
   }, {} as Record<string, string>);
 
-  console.log('Final State data:', stateData);
-  console.log('WASM params:', wasmParams);
+  const flattenedParams = wasmParams
+    ? Object.entries(wasmParams).reduce((acc, [key, value]) => {
+        if (typeof value === "object") {
+          Object.entries(value as Record<string, string>).forEach(
+            ([subKey, subValue]) => {
+              acc[subKey] = subValue;
+            }
+          );
+        } else {
+          acc[key] = value as string;
+        }
+        return acc;
+      }, {} as Record<string, string>)
+    : null;
 
-  // Flatten WASM params for display
-  const flattenedParams = wasmParams ? Object.entries(wasmParams).reduce((acc, [key, value]) => {
-    if (typeof value === 'object') {
-      Object.entries(value as Record<string, string>).forEach(([subKey, subValue]) => {
-        acc[subKey] = subValue;
-      });
-    } else {
-      acc[key] = value as string;
-    }
-    return acc;
-  }, {} as Record<string, string>) : null;
+  const mismatches = flattenedParams
+    ? Object.entries(flattenedParams).filter(([key, type]) => {
+        const hasMatch = stateData[key];
+        const isCompatible =
+          hasMatch && isTypeCompatible(type as string, stateData[key]);
 
-  // Check for mismatches between WASM params and EVM state data
-  const mismatches = flattenedParams ? Object.entries(flattenedParams).filter(([key, type]) => {
-    const hasMatch = stateData[key];
-    const isCompatible = hasMatch && isTypeCompatible(type as string, stateData[key]);
-    console.log(`Checking ${key}: hasMatch=${hasMatch}, type=${type}, evmType=${stateData[key]}, isCompatible=${isCompatible}`);
-    return !hasMatch || !isCompatible;
-  }) : [];
+        return !hasMatch || !isCompatible;
+      })
+    : [];
 
   const handleFormSubmit = (data: any) => {
-    // Include the state data in the submission
     onSubmit({
       ...data,
       stateData,
     });
   };
-
-  console.log("params are currently", wasmParams);
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -230,20 +242,14 @@ export function WASMConfigForm({
             configuration.
           </p>
           <div className={formStyles.formGroup}>
-            <Label className="text-sm font-medium text-gray-700">
-              WASM Topic ID
-            </Label>
+            <Label className={formStyles.label}>Topic ID</Label>
             <div className="flex flex-col space-y-2">
               <Select
                 onValueChange={(value) => {
                   setValue("topicSelect", value);
-                  if (value === "custom") {
-                    setValue("wasmTopicId", "");
-                  } else {
-                    setValue("wasmTopicId", value);
-                  }
+                  setValue("wasmTopicId", value === "custom" ? "" : value);
                 }}
-                defaultValue="0.0.5269810"
+                defaultValue={topicSelect}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a Topic ID" />
@@ -257,30 +263,22 @@ export function WASMConfigForm({
                 </SelectContent>
               </Select>
 
-              {topicSelect === "custom" && (
+              {isCustomTopic && (
                 <Input
                   {...register("wasmTopicId", {
                     required: "Topic ID is required",
-                    pattern: {
-                      value: /^[0-9]+\.[0-9]+\.[0-9]+$/,
-                      message:
-                        "Must be a valid Topic ID format (e.g., 0.0.1234567)",
-                    },
                   })}
-                  className={
-                    errors.wasmTopicId
-                      ? "border-red-500 focus:ring-red-200"
-                      : ""
-                  }
-                  placeholder="0.0.1234567"
+                  placeholder="Enter custom Topic ID"
+                  className="mt-2"
                 />
               )}
+              {errors.wasmTopicId && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.wasmTopicId.message}
+                </p>
+              )}
+              <CustomTopicMessage />
             </div>
-            {errors.wasmTopicId && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.wasmTopicId.message}
-              </p>
-            )}
           </div>
         </div>
 
@@ -352,9 +350,7 @@ export function WASMConfigForm({
             </div>
 
             <div className="border-t pt-4">
-              <Label className="text-sm font-medium text-gray-700">
-                Memo (Optional)
-              </Label>
+              <Label className={formStyles.label}>Memo (Optional)</Label>
               <Input
                 {...register("memo")}
                 className={

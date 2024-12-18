@@ -11,12 +11,14 @@ import Tweet from "@/components/Tweet";
 import { Footer } from "@/components/Footer";
 import { CheckIcon } from "@/components/icons/CheckIcon";
 import { ArrowRight } from "lucide-react";
+import { PriceReactiveNFT } from "@/components/examples/PriceReactiveNFT";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("learn");
   const tabsRef = useRef<HTMLDivElement>(null);
   const [showOddMetadata, setShowOddMetadata] = useState(false);
   const [showEvenMetadata, setShowEvenMetadata] = useState(false);
+  const [toggle, setToggle] = useState(false);
 
   const scrollToTabs = useCallback((tab: string) => {
     setActiveTab(tab);
@@ -387,6 +389,8 @@ export default function Page() {
                     </div>
                   </div>
 
+                  <PriceReactiveNFT />
+
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 blur-3xl -z-10"></div>
 
@@ -644,12 +648,10 @@ export default function Page() {
                               <path
                                 fillRule="evenodd"
                                 d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z"
-                                clipRule="evenodd"
                               />
                               <path
                                 fillRule="evenodd"
                                 d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z"
-                                clipRule="evenodd"
                               />
                             </svg>
                           </a>
@@ -710,11 +712,11 @@ export default function Page() {
                         <button
                           onClick={() =>
                             window.open(
-                              "https://testnet.kiloscribe.com/launch/first-smart-hashinal",
+                              "https://smart.hashinals.com?network=testnet",
                               "_blank"
                             )
                           }
-                          className="w-full group relative inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-lg px-6 py-3 text-lg font-medium transition-all duration-200 ease-in-out transform hover:translate-y-[-2px] hover:shadow-lg"
+                          className="w-full group relative inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-lg px-6 py-3 text-lg font-medium transition-all duration-200"
                         >
                           <span>Mint on Testnet</span>
                           <svg
@@ -845,7 +847,7 @@ export default function Page() {
                                     "_blank"
                                   )
                                 }
-                                className="group relative inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-lg px-8 py-4 text-xl font-semibold transition-all duration-200 ease-in-out transform hover:translate-y-[-2px] hover:shadow-lg"
+                                className="group relative inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-lg px-8 py-4 text-xl font-semibold transition-all duration-200"
                               >
                                 <span>Launch Your Hashinal</span>
                                 <ArrowRight className="w-6 h-6 ml-2 -mr-1 transition-transform group-hover:translate-x-1" />
@@ -890,7 +892,7 @@ export default function Page() {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4M6 16l4-4 4 4"
+                                  d="M10 20l4-16m4 4l4 4-4 4M6.343 6.343l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
                                 />
                               </svg>
                             </div>
@@ -939,6 +941,91 @@ export default function Page() {
                           </div>
                         </a>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* HCS-7 Toolkit Section */}
+                  <div className="mt-16 bg-gradient-to-br from-teal-100 to-blue-100 dark:from-teal-900/30 dark:to-blue-900/30 p-8 rounded-2xl shadow-xl transform transition-transform hover:scale-105">
+                    <div className="text-center mb-8">
+                      <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 animate-pulse">
+                        Explore the HCS-7 Toolkit
+                      </h3>
+                      <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+                        Dive into the toolkit that powers Smart Hashinals,
+                        featuring EVM and WASM bridges for reading and
+                        transforming on-chain state.
+                      </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                      <a
+                        href="https://github.com/hashgraph-online/hcs-7-toolkit/blob/main/README.md"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-teal-200 dark:border-teal-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all transform hover:scale-105"
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="w-14 h-14 bg-teal-100 dark:bg-teal-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <svg
+                              className="w-8 h-8 text-teal-600 dark:text-teal-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                              Bridge Implementation
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              TypeScript implementation of EVM and WASM bridges
+                              for reading and transforming on-chain state.
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+
+                      <a
+                        href="https://github.com/hashgraph-online/hcs-7-toolkit/blob/main/chainlink-wasm/src/lib.rs"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-blue-200 dark:border-blue-900 hover:border-blue-500 dark:hover:border-blue-500 transition-all transform hover:scale-105"
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <svg
+                              className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              Example WASM Module
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Rust implementation of a WASM module for the
+                              Chainlink price feed example, showing how to
+                              handle nested data structures.
+                            </p>
+                          </div>
+                        </div>
+                      </a>
                     </div>
                   </div>
                 </div>

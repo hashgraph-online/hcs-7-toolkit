@@ -1,90 +1,125 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'hcs-7-toolkit-storage';
 const DB_VERSION = 2;
 
-export function useIDBStorage<T>(key: string, initialValue: T, storeName: string) {
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
-  const [loading, setLoading] = useState(true);
-  const [db, setDb] = useState<IDBPDatabase | null>(null);
+type DBState<T> = {
+  value: T;
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  error?: Error;
+};
 
-  // Initialize DB only once when the hook mounts
+let dbInitPromise: Promise<IDBPDatabase> | null = null;
+
+export const getDB = async (storeName: string): Promise<IDBPDatabase> => {
+  if (!dbInitPromise) {
+    dbInitPromise = openDB(DB_NAME, DB_VERSION, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains(storeName)) {
+          db.createObjectStore(storeName);
+          console.log("[DEBUG] Created store:", { storeName });
+        }
+      },
+    });
+  }
+  return dbInitPromise;
+};
+
+export function useIDBStorage<T>(key: string, initialValue: T, storeName: string) {
+  const [state, setState] = useState<DBState<T>>({
+    value: initialValue,
+    status: 'idle',
+  });
+
   useEffect(() => {
     const initDB = async () => {
+      console.log("[DEBUG] Initializing IndexedDB:", { key, storeName });
+      setState(prev => ({ ...prev, status: 'loading' }));
+      
       try {
-        const database = await openDB(DB_NAME, DB_VERSION, {
-          upgrade(db) {
-            // Create the object store if it doesn't exist
-            if (!db.objectStoreNames.contains(storeName)) {
-              db.createObjectStore(storeName);
-            }
-          },
+        const db = await getDB(storeName);
+        const value = await db.get(storeName, key);
+        console.log("[DEBUG] Initial value loaded:", { value, key });
+        
+        setState({
+          value: value ?? initialValue,
+          status: 'ready',
         });
-        setDb(database);
       } catch (error) {
-        console.error('Error initializing IndexedDB:', error);
+        console.error("[ERROR] Database initialization failed:", { error, key, storeName });
+        setState({
+          value: initialValue,
+          status: 'error',
+          error: error instanceof Error ? error : new Error('Unknown error'),
+        });
       }
     };
 
     initDB();
-    return () => {
-      db?.close();
-    };
-  }, [storeName]);
-
-  // Load the initial value
-  useEffect(() => {
-    const loadInitialValue = async () => {
-      if (!db) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const value = await db.get(storeName, key);
-        if (value !== undefined) {
-          setStoredValue(value);
-        }
-      } catch (error) {
-        console.error('Error loading from IndexedDB:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialValue();
-  }, [db, storeName, key]);
+  }, [storeName, key, initialValue]);
 
   const setValue = useCallback(
-    async (value: T | ((val: T) => T)) => {
-      if (!db) return false;
+    async (valueOrUpdater: T | ((prev: T) => T)): Promise<boolean> => {
+      console.log("[DEBUG] setValue called:", { 
+        dbStatus: state.status,
+        key,
+        storeName
+      });
 
       try {
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
-        await db.put(storeName, valueToStore, key);
-        setStoredValue(valueToStore);
+        const db = await getDB(storeName);
+        const currentValue = await db.get(storeName, key) as T;
+        const newValue = valueOrUpdater instanceof Function 
+          ? valueOrUpdater(currentValue ?? state.value)
+          : valueOrUpdater;
+
+        console.log("[DEBUG] Putting value in IndexedDB:", { 
+          key,
+          storeName,
+          valueSize: JSON.stringify(newValue).length
+        });
+
+        await db.put(storeName, newValue, key);
+        console.log("[DEBUG] Value successfully stored in IndexedDB");
+
+        setState(prev => ({ ...prev, value: newValue, status: 'ready' }));
         return true;
       } catch (error) {
-        console.error('Error saving to IndexedDB:', error);
+        console.error("[ERROR] Failed to store in IndexedDB:", { 
+          error,
+          key,
+          storeName
+        });
+        setState(prev => ({
+          ...prev,
+          error: error instanceof Error ? error : new Error('Unknown error'),
+        }));
         return false;
       }
     },
-    [key, db, storeName]  // Remove storedValue from deps since we access it in closure
+    [key, storeName, state.value]
   );
 
-  const removeValue = useCallback(async () => {
-    if (!db) return false;
-
+  const removeValue = useCallback(async (): Promise<boolean> => {
     try {
+      const db = await getDB(storeName);
       await db.delete(storeName, key);
-      setStoredValue(initialValue);
+      setState(prev => ({ ...prev, value: initialValue }));
       return true;
     } catch (error) {
-      console.error('Error removing from IndexedDB:', error);
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error : new Error('Unknown error'),
+      }));
       return false;
     }
-  }, [key, initialValue, db, storeName]);
+  }, [key, storeName, initialValue]);
 
-  return [storedValue, setValue, removeValue, loading] as const;
+  return [
+    state.value,
+    setValue,
+    removeValue,
+    state.status === 'loading',
+  ] as const;
 }
