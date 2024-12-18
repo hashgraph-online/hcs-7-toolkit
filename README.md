@@ -2,7 +2,57 @@
 
 A toolkit for implementing HCS-7 state processing on Hedera. This package provides the ability to process HCS-7 state by combining EVM contract state with WASM-based topic selection.
 
-## Installation
+The HCS-7 Toolkit was developed during the Hedera Hackathon in December 2025. HCS-7 is a standard that allows you to create NFTs whose metadata updates based on smart contract state. It combines on-chain data with WASM processing for trustless, programmatic updates. The standard is currently in draft mode, and all tooling is in alpha and not ready for production use.
+
+# Links
+
+- [Testnet Demo for HCS-7](https://hcs-7.hashgraphonline.com)
+- [100% on-graph Smart Hashinal LaunchPage](https://smart.hashinals.com?network=testnet)
+- [Draft HCS-7 Standard Documentation](https://feat-hcs-7.hcs-improvement-proposals.pages.dev/docs/standards/hcs-7)
+
+# Operating the demo locally
+
+```bash
+git clone https://github.com/HashgraphOnline/hcs-7-toolkit.git
+cd hcs-7-toolkit/demo
+yarn
+yarn run dev
+```
+
+# Trying the Examples
+
+## Running the TypeScript Examples
+
+```bash
+git clone https://github.com/HashgraphOnline/hcs-7-toolkit.git
+cd hcs-7-toolkit
+yarn
+yarn run try-wasm 
+yarn run try-chainlink
+```
+
+This will run the example code that demonstrates:
+1. Fetching a WASM module from KiloScribe
+2. Reading EVM contract state (minted count and tokens remaining)
+3. Processing state with WASM to determine topic selection
+4. Routing messages based on the selected topic
+
+## Building and Testing Rust WASM Modules
+
+```bash
+# Install Rust and wasm-pack if you haven't already
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+# Build the example WASM module
+cd hcs-7-toolkit/rust
+wasm-pack build
+
+# Test the WASM module
+wasm-pack test --headless --firefox
+```
+
+## Installing the hcs-7-toolkit package
 
 ```bash
 npm install @hashgraphonline/hcs-7-toolkit
@@ -13,6 +63,20 @@ npm install @hashgraphonline/hcs-7-toolkit
 - Process HCS-7 state using WASM modules
 - Read contract state from Hedera EVM
 - Deterministic topic selection based on contract values
+- Chainlink oracle integration for price-reactive NFTs
+- Automated and manual mode support for topic selection
+- Interactive demo UI with real-time price updates
+- Comprehensive error handling and user feedback
+
+## Demo
+
+Visit our [live demo](https://hcs-7.hashgraphonline.com) to explore:
+
+- HCS-7 UI Builder tool
+- Price-reactive NFT backgrounds using Chainlink oracles
+- WASM configuration with HCS-7 standard validation
+- Real-time topic switching based on HBAR price
+- Interactive mode selection (Auto/Manual)
 
 ## Usage
 
@@ -108,20 +172,23 @@ const topicId = await wasmBridge.executeWasm(stateData, messages);
 
 ## Example Implementation
 
-This repository also includes an example implementation showing how to:
+This repository includes several example implementations:
 
-1. Create an HCS-7 topic with WASM-based routing
-2. Configure the topic with EVM and WASM settings
-3. Register HCS-1 topics for message routing
+1. **Price-Reactive NFTs**: Demonstrates how to create dynamic NFTs that respond to HBAR price changes using Chainlink oracles
+2. **Basic WASM Router**: Shows how to implement WASM-based topic selection
+3. **Chainlink Integration**: Examples of integrating Chainlink price feeds with HCS-7
+4. **TypeScript Examples**: Complete examples of EVM state reading and WASM processing in `src/examples/`
+5. **Rust WASM Examples**: Sample WASM modules written in Rust for topic selection in `rust/src/`
 
-See `create-hcs-7-topic.ts` for the complete example code. Note that this example code is not published as part of the npm package - it's provided as a reference implementation only.
+See the `demo/src/components/examples` directory for complete implementations.
 
 ## Development
 
 ### Prerequisites
 
 - Node.js >= 18
-- Rust and wasm-pack (if building the example WASM module)
+- Rust and wasm-pack (if building custom WASM modules)
+- Access to Chainlink price feeds on Hedera (for price-reactive features)
 
 ### Building the Package
 
@@ -134,6 +201,18 @@ npm run build
 ```bash
 npm run try-wasm
 ```
+
+## Resources
+
+- [HCS-7 Standard Documentation](https://feat-hcs-7.hcs-improvement-proposals.pages.dev/docs/standards/hcs-7)
+- [Chainlink Documentation](https://docs.chain.link)
+- [Live Demo](https://hcs-7.hashgraphonline.com)
+
+## Community
+
+- [Hashinals Telegram](https://t.me/Hashinals)
+- [HashgraphOnline X](https://x.com/HashgraphOnline)
+- [KiloScribe X](https://x.com/KiloScribeApp)
 
 ## Contributing
 
