@@ -15,10 +15,79 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
+type OpenGraphType = {
+  siteName: string;
+  description: string;
+  templateTitle?: string;
+  logo?: string;
+};
+
+export function openGraph({
+  siteName,
+  templateTitle,
+  description,
+  logo = "https://hcs-7.hashgraphonline.com/logo.png",
+}: OpenGraphType): string {
+  const ogLogo = encodeURIComponent(logo);
+  const ogSiteName = encodeURIComponent(siteName.trim());
+  const ogTemplateTitle = templateTitle
+    ? encodeURIComponent(templateTitle.trim())
+    : undefined;
+  const ogDesc = encodeURIComponent(description.trim());
+
+  return `https://og-n2twworom-theodorusclarence.vercel.app/api/general?siteName=${ogSiteName}&description=${ogDesc}&logo=${ogLogo}${
+    ogTemplateTitle ? `&templateTitle=${ogTemplateTitle}` : ""
+  }`;
+}
+
+const siteConfig = {
   title: "Smart Hashinals with HCS-7 | Hashgraph Online",
   description:
     "Dynamic, Programmable, and 100% on-graph assets. Finally, enabling a new generation of NFTs.",
+  url: "https://hcs-7.hashgraphonline.com",
+};
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.title}`,
+  },
+  description: siteConfig.description,
+  robots: { index: true, follow: true },
+  icons: {
+    icon: "/favicon/favicon.ico",
+    shortcut: "/favicon/favicon-16x16.png",
+    apple: "/favicon/apple-touch-icon.png",
+  },
+  manifest: `/favicon/site.webmanifest`,
+  openGraph: {
+    url: siteConfig.url,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    siteName: siteConfig.title,
+    images: [
+      openGraph({
+        siteName: siteConfig.title,
+        description: siteConfig.description,
+      }),
+    ],
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [
+      openGraph({
+        siteName: siteConfig.title,
+        description: siteConfig.description,
+      }),
+    ],
+    creator: "@HashgraphOnline",
+  },
+  },
 };
 
 export default function RootLayout({

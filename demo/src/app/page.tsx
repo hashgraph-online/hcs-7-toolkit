@@ -18,7 +18,6 @@ export default function Page() {
   const tabsRef = useRef<HTMLDivElement>(null);
   const [showOddMetadata, setShowOddMetadata] = useState(false);
   const [showEvenMetadata, setShowEvenMetadata] = useState(false);
-  const [toggle, setToggle] = useState(false);
 
   const scrollToTabs = useCallback((tab: string) => {
     setActiveTab(tab);

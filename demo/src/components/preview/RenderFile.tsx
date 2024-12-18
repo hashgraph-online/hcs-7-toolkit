@@ -26,10 +26,13 @@ export function RenderFile({
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const mime = mimeType || fileType;
   const isHTML =
-    mimeType?.startsWith("text/html") ||
-    mimeType?.startsWith("index/html") ||
-    mimeType?.includes("application/xml");
+    mime?.startsWith("text/html") ||
+    mime?.startsWith("index/html") ||
+    mime?.includes("application/xml");
+
+  console.log("mime is", url, mime, fileType);
 
   useEffect(() => {
     if (!url) return;
@@ -64,7 +67,7 @@ export function RenderFile({
   }
 
   // Try to determine mime type from URL if not provided
-  if (!mimeType && url) {
+  if (!mime && url) {
     const extension = url.split(".").pop()?.toLowerCase();
     if (extension) {
       switch (extension) {
@@ -88,8 +91,8 @@ export function RenderFile({
     }
   }
 
-  {
-    isHTML && (
+  if (isHTML) {
+    return (
       <iframe
         className={`${className} bg-white`}
         width={width}
@@ -102,7 +105,7 @@ export function RenderFile({
   }
 
   // Handle JSON and text content
-  if (fileType.includes("application/json") || fileType.includes("text/")) {
+  if (mime?.includes("application/json") || mime?.includes("text/")) {
     return (
       <pre
         className={`bg-gray-50 p-4 rounded-lg overflow-auto font-mono text-sm ${className}`}
@@ -113,7 +116,7 @@ export function RenderFile({
     );
   }
 
-  if (mimeType?.startsWith("video/")) {
+  if (mime?.startsWith("video/")) {
     return (
       <video
         controls
@@ -126,7 +129,7 @@ export function RenderFile({
     );
   }
 
-  if (mimeType?.startsWith("audio/")) {
+  if (mime?.startsWith("audio/")) {
     return (
       <audio
         controls
@@ -139,7 +142,7 @@ export function RenderFile({
     );
   }
 
-  if (mimeType?.startsWith("image/")) {
+  if (mime?.startsWith("image/")) {
     return (
       <img
         src={url}
@@ -150,7 +153,7 @@ export function RenderFile({
     );
   }
 
-  if (mimeType?.startsWith("model/")) {
+  if (mime?.startsWith("model/")) {
     return (
       <GlbViewer src={url} width={Number(width)} height={Number(height)} />
     );

@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { ArrowPathIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { FiCopy } from "react-icons/fi";
 import {
   PrivateKey,
   PublicKey,
@@ -89,6 +89,13 @@ export function BuildSection() {
       evmConfigs.length >= 1 &&
       wasmConfigs.length >= 1 &&
       hcs1Registrations.length >= 2;
+
+    console.log("topic ready mode", {
+      isReady,
+      evmLength: evmConfigs.length,
+      wasmLength: wasmConfigs.length,
+      hcs1Length: hcs1Registrations.length,
+    });
 
     return {
       isReady,
@@ -666,14 +673,33 @@ export function BuildSection() {
                   <CardDescription>Preview your inscriptions</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div>
-                    <strong>HRL:</strong> hcs://7/{topicState?.topicId}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 mb-8">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        NFT Metadata Location (HCS-6)
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 bg-white dark:bg-gray-800 px-3 py-2 rounded-md font-mono text-sm">
+                          hcs://6/{topicState?.topicId}
+                        </code>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `hcs://6/${topicState?.topicId}`
+                            );
+                          }}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                        >
+                          <FiCopy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {isTopicReady && (
                     <RenderFile
                       url={`https://kiloscribe.com/api/inscription-cdn/${topicState?.topicId}?network=testnet`}
-                      height={400}
+                      className="w-full h-full object-contain"
                     />
                   )}
                   {!isTopicReady && (
@@ -691,7 +717,17 @@ export function BuildSection() {
                             }`}
                           >
                             {curentTopicReadyMode.evmLength >= 1 && (
-                              <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                             )}
                           </div>
                           <span
@@ -715,7 +751,17 @@ export function BuildSection() {
                             }`}
                           >
                             {curentTopicReadyMode.wasmLength >= 1 && (
-                              <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                             )}
                           </div>
                           <span
@@ -739,7 +785,17 @@ export function BuildSection() {
                             }`}
                           >
                             {curentTopicReadyMode.hcs1Length >= 2 && (
-                              <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                             )}
                           </div>
                           <span
