@@ -8,6 +8,7 @@ The HCS-7 Toolkit was developed during the Hedera Hackathon in December 2025. HC
 
 - [Testnet Demo for HCS-7](https://hcs-7.hashgraphonline.com)
 - [100% on-graph Smart Hashinal LaunchPage](https://smart.hashinals.com?network=testnet)
+- [LaunchPage Smart Contracts](https://github.com/KiloScribe/launchpage-smart-contracts)
 - [Draft HCS-7 Standard Documentation](https://feat-hcs-7.hcs-improvement-proposals.pages.dev/docs/standards/hcs-7)
 
 # Operating the demo locally
