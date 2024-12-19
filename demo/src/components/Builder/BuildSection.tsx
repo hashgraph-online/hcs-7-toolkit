@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useJobs } from "@/hooks/useJobs";
+import { FiArrowRight } from "react-icons/fi";
 
 export function BuildSection() {
   const {
@@ -692,6 +693,18 @@ export function BuildSection() {
                         >
                           <FiCopy className="w-4 h-4" />
                         </button>
+                        <Button
+                          onClick={() =>
+                            window.open(
+                              "https://kiloscribe.com/launch/hrl?hrl=hcs://6/0.0.5270303",
+                              "_blank"
+                            )
+                          }
+                          className="bg-primary hover:bg-primary/90 text-white"
+                        >
+                          <FiArrowRight className="mr-2 h-4 w-4" />
+                          Launch on KiloScribe
+                        </Button>
                       </div>
                     </div>
                   </div>
