@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { FiCopy } from "react-icons/fi";
 import {
-  PrivateKey,
   PublicKey,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
@@ -48,6 +47,79 @@ import {
 } from "@/components/ui/select";
 import { useJobs } from "@/hooks/useJobs";
 import { FiArrowRight } from "react-icons/fi";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import Typography from "../ui/typography";
+
+const wasmExample = `use wasm_bindgen::prelude::*;
+use serde_json::Value;
+use num_bigint::BigUint;
+
+fn parse_number_from_result(value: &Value) -> Option<BigUint> {
+    value.get("latestRoundData")
+        .and_then(|v| v.get("answer"))
+        .and_then(|v| v.as_str())
+        .and_then(|s| s.parse().ok())
+}
+
+#[wasm_bindgen]
+pub fn process_state(state_json: &str, messages_json: &str) -> String {
+    // Parse JSON inputs
+    let state: Value = match serde_json::from_str(state_json) {
+        Ok(data) => data,
+        Err(_) => return String::new(),
+    };
+
+    let messages: Vec<Value> = match serde_json::from_str(messages_json) {
+        Ok(data) => data,
+        Err(_) => return String::new(),
+    };
+
+    // Extract price from Chainlink roundData
+    let price = match parse_number_from_result(&state) {
+        Some(p) => p,
+        None => return String::new()
+    };
+
+    // Price is even/odd determines which topic to use
+    let is_even = price.clone() % 2u32 == BigUint::from(0u32);
+
+    // Find matching message based on even/odd tag
+    messages.iter()
+        .find(|msg| {
+            msg.get("p").and_then(|p| p.as_str()) == Some("hcs-7") &&
+            msg.get("op").and_then(|op| op.as_str()) == Some("register") &&
+            msg.get("d")
+                .and_then(|d| d.get("tags"))
+                .and_then(|tags| tags.as_array())
+                .map(|tags| tags.iter().any(|t| t.as_str() == Some(if is_even { "even" } else { "odd" })))
+                .unwrap_or(false)
+        })
+        .and_then(|msg| msg.get("t_id"))
+        .and_then(|id| id.as_str())
+        .unwrap_or("")
+        .to_string()
+}
+
+#[wasm_bindgen]
+pub fn get_params() -> String {
+    let params = serde_json::json!({
+        "latestRoundData": {
+            "roundId": "uint80",
+            "answer": "int256",
+            "startedAt": "uint256",
+            "updatedAt": "uint256",
+            "answeredInRound": "uint80"
+        }
+    });
+    serde_json::to_string(&params).unwrap_or_default()
+}`;
 
 export function BuildSection() {
   const {
@@ -67,6 +139,9 @@ export function BuildSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingTopic, setIsCreatingTopic] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [accordionValue, setAccordionValue] = useState<string>("preview");
+  const [selectedTab, setSelectedTab] = useState<string>("evm");
 
   const [currentTab, setCurrentTab] = useState<string>("create");
 
@@ -503,7 +578,6 @@ export function BuildSection() {
 
         {isConnected && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Configuration Area */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -513,7 +587,16 @@ export function BuildSection() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Tabs value={currentTab} onValueChange={setCurrentTab}>
+                  <Tabs
+                    defaultValue="evm"
+                    className="w-full"
+                    onValueChange={(value) => {
+                      setSelectedTab(value);
+                      if (value === "wasm") {
+                        setAccordionValue("wasm");
+                      }
+                    }}
+                  >
                     <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="create">Create Topic</TabsTrigger>
                       <TabsTrigger value="evm" disabled={!topicState?.topicId}>
@@ -626,22 +709,26 @@ export function BuildSection() {
                     </TabsContent>
 
                     <TabsContent value="wasm">
-                      <WASMConfigForm
-                        onSubmit={(data) => submitConfig("wasm", data)}
-                        isConnected={isConnected}
-                        isSubmitting={isSubmitting}
-                        getWasmConfigCount={getWasmConfigCount}
-                        getSubmitButtonText={getSubmitButtonText}
-                        defaultValues={watch("wasmConfigs")?.[0]}
-                        evmMessages={messages.filter(
-                          (msg): msg is EVMConfigMessage => msg.t === "evm"
-                        )}
-                      />
-                      <MessageAccordion
-                        messages={messages}
-                        type="wasm"
-                        title="Submitted WASM Configs"
-                      />
+                      <div className="flex gap-6">
+                        <div className="flex-1">
+                          <WASMConfigForm
+                            onSubmit={(data) => submitConfig("wasm", data)}
+                            isConnected={isConnected}
+                            isSubmitting={isSubmitting}
+                            getWasmConfigCount={getWasmConfigCount}
+                            getSubmitButtonText={getSubmitButtonText}
+                            defaultValues={watch("wasmConfigs")?.[0]}
+                            evmMessages={messages.filter(
+                              (msg): msg is EVMConfigMessage => msg.t === "evm"
+                            )}
+                          />
+                          <MessageAccordion
+                            messages={messages}
+                            type="wasm"
+                            title="Submitted WASM Configs"
+                          />
+                        </div>
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="hcs1">
@@ -666,7 +753,6 @@ export function BuildSection() {
               </Card>
             </div>
 
-            {/* Preview Area */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -674,166 +760,215 @@ export function BuildSection() {
                   <CardDescription>Preview your inscriptions</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 mb-8">
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        NFT Metadata Location (HCS-6)
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="flex-1 bg-white dark:bg-gray-800 px-3 py-2 rounded-md font-mono text-sm">
-                          hcs://6/{topicState?.topicId}
-                        </code>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              `hcs://6/${topicState?.topicId}`
-                            );
-                          }}
-                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                        >
-                          <FiCopy className="w-4 h-4" />
-                        </button>
-                        <Button
-                          onClick={() =>
-                            window.open(
-                              "https://kiloscribe.com/launch/hrl?hrl=hcs://6/0.0.5270303",
-                              "_blank"
-                            )
-                          }
-                          className="bg-primary hover:bg-primary/90 text-white"
-                        >
-                          <FiArrowRight className="mr-2 h-4 w-4" />
-                          Launch on KiloScribe
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {isTopicReady && (
-                    <RenderFile
-                      url={`https://kiloscribe.com/api/inscription-cdn/${topicState?.topicId}?network=testnet`}
-                      className="w-full h-full object-contain"
-                    />
-                  )}
-                  {!isTopicReady && (
-                    <div className="space-y-4 text-gray-600 py-8 px-4">
-                      <h3 className="text-lg font-medium text-center mb-6">
-                        Topic Setup Progress
-                      </h3>
-                      <div className="max-w-md mx-auto space-y-3">
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`flex h-5 w-5 items-center justify-center rounded border ${
-                              curentTopicReadyMode.evmLength >= 1
-                                ? "bg-green-50 border-green-600"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {curentTopicReadyMode.evmLength >= 1 && (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
+                  <Accordion
+                    type="single"
+                    value={accordionValue}
+                    onValueChange={setAccordionValue}
+                    className="w-full"
+                  >
+                    <AccordionItem value="preview">
+                      <AccordionTrigger className="px-4 py-2">
+                        Preview
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="p-4 space-y-4">
+                          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                            <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                              NFT Metadata Location (HCS-6)
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <code className="flex-1 bg-white dark:bg-gray-800 px-3 py-2 rounded-md font-mono text-sm">
+                                hcs://6/{topicState?.topicId}
+                              </code>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(
+                                    `hcs://6/${topicState?.topicId}`
+                                  );
+                                }}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
                               >
-                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
+                                <FiCopy className="w-4 h-4" />
+                              </button>
+                              <Button
+                                onClick={() =>
+                                  window.open(
+                                    "https://kiloscribe.com/launch/hrl?hrl=hcs://6/0.0.5270303",
+                                    "_blank"
+                                  )
+                                }
+                                className="bg-primary hover:bg-primary/90 text-white"
+                              >
+                                <FiArrowRight className="mr-2 h-4 w-4" />
+                                Launch on KiloScribe
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg overflow-hidden">
+                            {isTopicReady && (
+                              <RenderFile
+                                url={`https://kiloscribe.com/api/inscription-cdn/${topicState?.topicId}?network=testnet`}
+                                className="w-full h-full object-contain"
+                              />
+                            )}
+                            {!isTopicReady && (
+                              <div className="space-y-4 text-gray-600 py-8 px-4">
+                                <h3 className="text-lg font-medium text-center mb-6">
+                                  Topic Setup Progress
+                                </h3>
+                                <div className="max-w-md mx-auto space-y-3">
+                                  <div className="flex items-center space-x-3">
+                                    <div
+                                      className={`flex h-5 w-5 items-center justify-center rounded border ${
+                                        curentTopicReadyMode.evmLength >= 1
+                                          ? "bg-green-50 border-green-600"
+                                          : "border-gray-300"
+                                      }`}
+                                    >
+                                      {curentTopicReadyMode.evmLength >= 1 && (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <span
+                                      className={
+                                        curentTopicReadyMode.evmLength >= 1
+                                          ? "text-green-600"
+                                          : ""
+                                      }
+                                    >
+                                      EVM Config (
+                                      {curentTopicReadyMode.evmLength}/1
+                                      required)
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center space-x-3">
+                                    <div
+                                      className={`flex h-5 w-5 items-center justify-center rounded border ${
+                                        curentTopicReadyMode.wasmLength >= 1
+                                          ? "bg-green-50 border-green-600"
+                                          : "border-gray-300"
+                                      }`}
+                                    >
+                                      {curentTopicReadyMode.wasmLength >= 1 && (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <span
+                                      className={
+                                        curentTopicReadyMode.wasmLength >= 1
+                                          ? "text-green-600"
+                                          : ""
+                                      }
+                                    >
+                                      WASM Config (
+                                      {curentTopicReadyMode.wasmLength}/1
+                                      required)
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center space-x-3">
+                                    <div
+                                      className={`flex h-5 w-5 items-center justify-center rounded border ${
+                                        curentTopicReadyMode.hcs1Length >= 2
+                                          ? "bg-green-50 border-green-600"
+                                          : "border-gray-300"
+                                      }`}
+                                    >
+                                      {curentTopicReadyMode.hcs1Length >= 2 && (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <span
+                                      className={
+                                        curentTopicReadyMode.hcs1Length >= 2
+                                          ? "text-green-600"
+                                          : ""
+                                      }
+                                    >
+                                      HCS-1 Registrations (
+                                      {curentTopicReadyMode.hcs1Length}
+                                      /2 required)
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-center mt-6 text-gray-500">
+                                  Complete all requirements above to enable the
+                                  preview
+                                </p>
+                              </div>
+                            )}
+                            {!topicState?.topicId && (
+                              <div className="text-center text-gray-500 py-8">
+                                Create a topic to preview inscriptions
+                              </div>
                             )}
                           </div>
-                          <span
-                            className={
-                              curentTopicReadyMode.evmLength >= 1
-                                ? "text-green-600"
-                                : ""
-                            }
-                          >
-                            EVM Config ({curentTopicReadyMode.evmLength}/1
-                            required)
-                          </span>
                         </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`flex h-5 w-5 items-center justify-center rounded border ${
-                              curentTopicReadyMode.wasmLength >= 1
-                                ? "bg-green-50 border-green-600"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {curentTopicReadyMode.wasmLength >= 1 && (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
+                    {currentTab === "wasm" && (
+                      <AccordionItem value="wasm">
+                        <AccordionTrigger className="px-4 py-2">
+                          WASM Module Example
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="p-4">
+                            <Typography>
+                              Interested in inscribing your own HCS-7 compatible
+                              WASM Module? See the example code below from the
+                              Chainlink integration.
+                            </Typography>
+                            <div className="rounded-lg overflow-hidden">
+                              <SyntaxHighlighter
+                                language="rust"
+                                style={oneDark}
+                                customStyle={{
+                                  margin: 0,
+                                  borderRadius: "0.5rem",
+                                  fontSize: "0.875rem",
+                                }}
                               >
-                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            )}
+                                {wasmExample}
+                              </SyntaxHighlighter>
+                            </div>
                           </div>
-                          <span
-                            className={
-                              curentTopicReadyMode.wasmLength >= 1
-                                ? "text-green-600"
-                                : ""
-                            }
-                          >
-                            WASM Config ({curentTopicReadyMode.wasmLength}/1
-                            required)
-                          </span>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`flex h-5 w-5 items-center justify-center rounded border ${
-                              curentTopicReadyMode.hcs1Length >= 2
-                                ? "bg-green-50 border-green-600"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {curentTopicReadyMode.hcs1Length >= 2 && (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            )}
-                          </div>
-                          <span
-                            className={
-                              curentTopicReadyMode.hcs1Length >= 2
-                                ? "text-green-600"
-                                : ""
-                            }
-                          >
-                            HCS-1 Registrations (
-                            {curentTopicReadyMode.hcs1Length}
-                            /2 required)
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-center mt-6 text-gray-500">
-                        Complete all requirements above to enable the preview
-                      </p>
-                    </div>
-                  )}
-                  {!topicState?.topicId && (
-                    <div className="text-center text-gray-500 py-8">
-                      Create a topic to preview inscriptions
-                    </div>
-                  )}
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                  </Accordion>
                 </CardContent>
               </Card>
             </div>

@@ -28,19 +28,16 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
-      {/* Global Background */}
       <div className="fixed inset-0 overflow-hidden">
         <div className="absolute w-[800px] h-[800px] -top-96 -right-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
         <div className="absolute w-[600px] h-[600px] -bottom-48 -left-48 bg-secondary/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-300"></div>
         <div className="absolute w-[900px] h-[900px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-500/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"></div>
       </div>
 
-      {/* Content */}
       <div className="relative z-10">
         <Navbar />
 
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          {/* Hero Section */}
           <section className="relative min-h-[80vh] flex items-center justify-center py-12 lg:py-20">
             <div className="relative z-10 max-w-5xl mx-auto text-center">
               <div className="inline-block mb-4">
@@ -100,7 +97,6 @@ export default function Page() {
                 </button>
               </div>
 
-              {/* Feature Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-4 text-left px-4">
                 <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all group">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -229,7 +225,6 @@ export default function Page() {
             </div>
           </section>
 
-          {/* Main Content Tabs */}
           <div className="pb-8 md:pb-16" ref={tabsRef}>
             <Tabs
               value={activeTab}
@@ -251,12 +246,8 @@ export default function Page() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Learn Tab */}
               <TabsContent value="learn" className="mt-4">
                 <div className="mx-auto space-y-24">
-                  {/* Introduction */}
-
-                  {/* Features Section */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 text-left px-4">
                     <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all group">
                       <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -334,7 +325,6 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* How It Works */}
                   <div className="bg-white/50 dark:bg-gray-800/50 rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-secondary">
                       How It Works
@@ -343,7 +333,6 @@ export default function Page() {
                     <MobileHowItWorks />
                     <DesktopHowItWorks />
 
-                    {/* Steps */}
                     <div className="hidden sm:grid grid-cols-4 gap-8 px-8">
                       <div className="text-center">
                         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -407,9 +396,7 @@ export default function Page() {
                     </div>
 
                     <div className="flex flex-col md:flex-row gap-16 md:gap-96 justify-center relative">
-                      {/* Transition Indicator */}
                       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                        {/* Desktop version */}
                         <div className="hidden md:flex flex-row items-center gap-4">
                           <div className="w-24 h-[2px] bg-purple-600/50 dark:bg-purple-400/50"></div>
                           <div className="text-sm font-medium text-purple-600/80 dark:text-purple-400/80 whitespace-nowrap">
@@ -417,7 +404,7 @@ export default function Page() {
                           </div>
                           <div className="w-24 h-[2px] bg-purple-600/50 dark:bg-purple-400/50"></div>
                         </div>
-                        {/* Mobile version */}
+
                         <div className="md:hidden flex flex-col items-center gap-2">
                           <svg
                             className="w-5 h-5 text-purple-600/80 dark:text-purple-400/80"
@@ -438,7 +425,6 @@ export default function Page() {
                         </div>
                       </div>
 
-                      {/* Even NFT */}
                       <div className="max-w-[500px] group bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
@@ -495,7 +481,6 @@ export default function Page() {
                         </div>
                       </div>
 
-                      {/* Odd NFT */}
                       <div className="max-w-[500px] group bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
@@ -569,7 +554,6 @@ export default function Page() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                      {/* Even Banner */}
                       <div className="group bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
@@ -593,7 +577,6 @@ export default function Page() {
                         </div>
                       </div>
 
-                      {/* Odd Banner */}
                       <div className="group bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-4">
@@ -619,7 +602,6 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* Learn More */}
                   <div className="mt-16 relative isolate overflow-hidden bg-gradient-to-b from-[#6100ff]/5 to-[#6100ff]/10 rounded-3xl">
                     <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8">
                       <div className="mx-auto max-w-2xl text-center">
@@ -673,7 +655,6 @@ export default function Page() {
                 </div>
               </TabsContent>
 
-              {/* Try Tab */}
               <TabsContent value="try" className="mt-6">
                 <div className="max-w-5xl mx-auto">
                   <div className="text-center mb-8">
@@ -768,10 +749,8 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* Create LaunchPage Section */}
                   <div className="relative mb-16">
                     <div className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                      {/* Image Section - Full bleed */}
                       <div className="relative">
                         <img
                           src="/launch-demo.png"
@@ -780,7 +759,6 @@ export default function Page() {
                         />
                       </div>
 
-                      {/* Content Section */}
                       <div className="p-8">
                         <div className="grid md:grid-cols-2 gap-8">
                           <div>
@@ -858,7 +836,6 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* GitHub Section */}
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 rounded-2xl"></div>
                     <div className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8">
@@ -943,7 +920,6 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* HCS-7 Toolkit Section */}
                   <div className="mt-16 bg-gradient-to-br from-teal-100 to-blue-100 dark:from-teal-900/30 dark:to-blue-900/30 p-8 rounded-2xl shadow-xl transform transition-transform hover:scale-105">
                     <div className="text-center mb-8">
                       <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 animate-pulse">
@@ -1030,7 +1006,6 @@ export default function Page() {
                 </div>
               </TabsContent>
 
-              {/* Build Tab - Original HCS-7 Builder Content */}
               <TabsContent value="build">
                 <BuildSection />
               </TabsContent>
