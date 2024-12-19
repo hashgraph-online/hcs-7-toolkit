@@ -662,14 +662,12 @@ export default function Page() {
                       Mint Your First Smart Hashinal
                     </h2>
                     <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                      KiloScribe has open-sourced its LaunchPage smart contract,
-                      empowering anyone to create dynamic Hashinals that adapt
-                      to on-chain conditions. The demo below showcases how the
-                      number of minted NFTs on the LaunchPage smart contract
-                      influences the banner image and metadata. This was
-                      developed using the KiloScribe LaunchPage Builder in
-                      conjunction with HCS-7, both created during the Hedera
-                      HelloFuture Hackathon.
+                      The demo below showcases how the number of minted NFTs on
+                      the LaunchPage smart contract influences the banner image
+                      and metadata. This was developed using the KiloScribe
+                      LaunchPage Builder & Smart Contracts in conjunction with
+                      HCS-7, both created during the Hedera HelloFuture
+                      Hackathon.
                     </p>
                   </div>
 
