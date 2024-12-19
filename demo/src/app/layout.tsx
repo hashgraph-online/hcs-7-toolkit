@@ -87,7 +87,6 @@ export const metadata: Metadata = {
     ],
     creator: "@HashgraphOnline",
   },
-  },
 };
 
 export default function RootLayout({

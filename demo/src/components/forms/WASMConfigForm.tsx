@@ -83,29 +83,31 @@ export function WASMConfigForm({
 
   const CustomTopicMessage = () =>
     isCustomTopic && (
-      <div className="mt-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-        <p className="text-sm text-white/80 mb-3">
-          To use a custom Topic ID, you'll need to inscribe a WASM module
-          following the{" "}
-          <a
-            href="https://github.com/hedera-dev/hcs-7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-400 hover:text-purple-300 underline"
-          >
-            HCS-7 standard
-          </a>
-          .
-        </p>
+      <>
+        <div className="mt-4 p-4 bg-primary rounded-lg border border-primary">
+          <p className="text-sm text-white/80 mb-3">
+            To use a custom Topic ID, you'll need to inscribe a WASM module
+            following the{" "}
+            <a
+              href="https://feat-hcs-7.hcs-improvement-proposals.pages.dev/docs/standards/hcs-7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white hover:text-white underline"
+            >
+              HCS-7 standard
+            </a>
+            .
+          </p>
+        </div>
         <button
           onClick={() =>
-            window.open("https://smart.hashinals.com?network=testnet", "_blank")
+            window.open("https://kiloscribe.com/inscribe?network=testnet", "_blank")
           }
-          className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors duration-200"
+          className="px-4 py-2 bg-green-500 text-black rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors duration-200"
         >
           Inscribe WASM Module
         </button>
-      </div>
+      </>
     );
 
   useEffect(() => {
